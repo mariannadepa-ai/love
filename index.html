@@ -17,41 +17,66 @@
       overflow:hidden;
     }
 
-    /* ====== NOWE: EKRAN WERYFIKACJI ====== */
+    /* ====== KLASYCZNY LOOK (własny) ====== */
     .hidden{ display:none; }
 
-    .gate{
-      width:min(720px, 94vw);
-      background: rgba(255,255,255,.78);
-      border:1px solid rgba(255,255,255,.55);
-      border-radius:24px;
-      padding:22px 18px;
+    .captcha{
+      width: min(360px, 94vw);
+      background:#fff;
+      border:1px solid #d7d7d7;
+      border-radius:10px;
       box-shadow: 0 18px 60px rgba(0,0,0,.18);
-      text-align:center;
-      backdrop-filter: blur(10px);
+      overflow:hidden;
+      font-family: Arial, system-ui, sans-serif;
       position:relative;
+      z-index: 2;
     }
-    .gate h1{margin:0 0 8px; font-size:clamp(24px, 4.5vw, 34px);}
-    .gate p{margin:10px 0; font-size:clamp(15px, 2.6vw, 17px); line-height:1.5;}
 
-    .grid{
+    .captcha-header{
+      background:#2f74ff;
+      color:#fff;
+      padding:12px 12px;
+      text-align:left;
+    }
+
+    .captcha-title{
+      font-size:12px;
+      opacity:.95;
+      letter-spacing:.2px;
+    }
+
+    .captcha-subtitle{
+      font-size:18px;
+      font-weight:700;
+      margin-top:2px;
+      line-height:1.1;
+    }
+
+    .captcha-body{
+      padding:10px;
+      background:#f6f6f6;
+    }
+
+    .captcha-grid{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
-      gap:10px;
-      margin:14px 0 10px;
+      gap:2px;
+      background:#cfcfcf;
+      padding:2px;
+      border-radius:6px;
     }
-    .tile{
+
+    .cap-tile{
       position:relative;
-      border-radius:16px;
-      overflow:hidden;
-      cursor:pointer;
-      border:2px solid transparent;
       background:#fff;
       aspect-ratio: 1 / 1;
-      box-shadow: 0 10px 24px rgba(0,0,0,.12);
+      cursor:pointer;
+      overflow:hidden;
+      border-radius:4px;
       user-select:none;
     }
-    .tile img{
+
+    .cap-tile img{
       width:100%;
       height:100%;
       object-fit:cover;
@@ -59,41 +84,75 @@
       user-select:none;
       pointer-events:none;
     }
-    .tile.selected{
-      border-color:#ff3b6b;
+
+    .cap-tile.selected::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border:4px solid #2f74ff;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.7);
     }
-    .tile.selected::after{
+
+    .cap-tile.selected::before{
       content:"✓";
       position:absolute;
-      right:10px; top:8px;
-      width:28px; height:28px;
-      display:grid; place-items:center;
+      right:6px;
+      top:6px;
+      width:22px;
+      height:22px;
       border-radius:999px;
-      background:#ff3b6b;
+      background:#2f74ff;
       color:#fff;
+      display:grid;
+      place-items:center;
       font-weight:800;
-      box-shadow: 0 8px 18px rgba(0,0,0,.2);
+      font-size:14px;
+      box-shadow: 0 6px 14px rgba(0,0,0,.18);
+      z-index: 2;
     }
 
-    .actions{
+    .captcha-footer{
       display:flex;
+      align-items:center;
+      justify-content:space-between;
       gap:10px;
-      justify-content:center;
-      flex-wrap:wrap;
-      margin-top:10px;
+      padding:10px 12px;
+      border-top:1px solid #e6e6e6;
+      background:#fff;
     }
-    .actions button{
-      border:0; padding:12px 16px; border-radius:14px; cursor:pointer;
-      font-weight:600; font-size:16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,.12);
-      transition: transform .08s ease;
-    }
-    .actions button:active{transform: translateY(1px) scale(.99);}
-    .primary{background:#ff3b6b; color:#fff;}
-    .ghost{background:rgba(255,255,255,.85); color:#111;}
-    .hint{ margin:10px 0 0; font-size:14px; opacity:.85; min-height: 18px; }
-    /* ====== KONIEC: WERYFIKACJA ====== */
 
+    .captcha-status{
+      font-size:12px;
+      color:#555;
+      min-height:16px;
+    }
+
+    .captcha-actions{
+      display:flex;
+      gap:8px;
+    }
+
+    .cap-btn{
+      border:1px solid #d7d7d7;
+      background:#fff;
+      border-radius:6px;
+      padding:8px 10px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:13px;
+    }
+
+    .cap-btn.primary{
+      background:#2f74ff;
+      color:#fff;
+      border-color:#2f74ff;
+    }
+
+    .cap-btn.ghost{
+      width:38px;
+    }
+
+    /* ====== TWOJA KARTA ====== */
     .card{
       width:min(560px, 92vw);
       background: rgba(255,255,255,.75);
@@ -104,6 +163,7 @@
       box-shadow: 0 18px 60px rgba(0,0,0,.18);
       text-align:center;
       position:relative;
+      z-index: 2;
     }
     h1{margin:0 0 8px; font-size:clamp(26px, 5vw, 38px);}
     p{margin:10px 0; font-size:clamp(16px, 2.6vw, 18px); line-height:1.5;}
@@ -128,12 +188,14 @@
       opacity:.95;
       user-select:none;
       pointer-events:none;
+      z-index: 1;
     }
     @keyframes floatUp{
       from{ transform: translateY(0) rotate(0deg); opacity:0;}
       10%{opacity:1;}
       to{ transform: translateY(-140vh) rotate(360deg); opacity:0;}
     }
+
     .reveal{
       margin-top:16px;
       padding:14px 16px;
@@ -147,23 +209,28 @@
 
 <body>
 
-  <!-- ====== NOWE: "Czy jesteś robotem" (siatka zdjęć) ====== -->
-  <div class="gate" id="gate">
-    <h1>Mała weryfikacja 😄</h1>
-    <p>Wybierz zdjęcia, na których jest <b>Twoja Walentynka</b> 💘</p>
-
-    <div class="grid" id="grid"></div>
-
-    <div class="actions">
-      <button class="primary" id="checkBtn">Sprawdź</button>
-      <button class="ghost" id="resetBtn">Wyczyść</button>
+  <!-- ====== WERYFIKACJA (klasyczny wygląd) ====== -->
+  <div class="captcha" id="gate" role="dialog" aria-label="Weryfikacja obrazkowa">
+    <div class="captcha-header">
+      <div class="captcha-title">Wybierz wszystkie obrazy z</div>
+      <div class="captcha-subtitle">Twoją Walentynką</div>
     </div>
 
-    <p class="hint" id="hint"></p>
-  </div>
-  <!-- ====== KONIEC: weryfikacja ====== -->
+    <div class="captcha-body">
+      <div class="captcha-grid" id="grid"></div>
+    </div>
 
-  <!-- ====== Twoja karta (ukryta do czasu przejścia weryfikacji) ====== -->
+    <div class="captcha-footer">
+      <div class="captcha-status" id="hint"></div>
+
+      <div class="captcha-actions">
+        <button class="cap-btn ghost" id="resetBtn" title="Wyczyść zaznaczenie">↻</button>
+        <button class="cap-btn primary" id="checkBtn">Sprawdź</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TWOJA KARTA (ukryta do czasu przejścia weryfikacji) ====== -->
   <div class="card hidden" id="card">
     <h1>Misiu Pysiu <span id="name">, Mój Królisiu</span> 💘</h1>
     <p> Mam jedno pytanie…</p>
@@ -183,40 +250,48 @@
   </div>
 
   <script>
-    // ====== NOWE: ustawienie zdjęć do weryfikacji ======
+    // ====== USTAWIENIA WERYFIKACJI ======
     // Masz w repo: img/1.png ... img/7.png
     // USTAW correct:true przy tych numerach, gdzie jest "Twoja walentynka"
     const images = [
-      { src: "img/1.png", correct: true },
-      { src: "img/2.png", correct: true },
-      { src: "img/3.png", correct: true },
-      { src: "img/4.png", correct: true },
-      { src: "img/5.png", correct: true },
-      { src: "img/6.png", correct: true },
-      { src: "img/7.png", correct: true },
+      { src: "img/1.png", correct: false },
+      { src: "img/2.png", correct: false },
+      { src: "img/3.png", correct: false },
+      { src: "img/4.png", correct: false },
+      { src: "img/5.png", correct: false },
+      { src: "img/6.png", correct: false },
+      { src: "img/7.png", correct: false },
     ];
 
     const grid = document.getElementById("grid");
     const hint = document.getElementById("hint");
 
-    // render kafelków
-    images.forEach((it, idx) => {
+    // Render kafelków (3x3 look: jeśli masz mniej niż 9 zdjęć, resztę wypełniamy "pustymi" kafelkami)
+    const tilesToShow = 9;
+    for (let i = 0; i < tilesToShow; i++) {
       const tile = document.createElement("div");
-      tile.className = "tile";
-      tile.dataset.idx = idx;
+      tile.className = "cap-tile";
+      tile.dataset.idx = String(i);
 
-      const img = document.createElement("img");
-      img.src = it.src;
-      img.alt = "Obraz " + (idx + 1);
-      img.loading = "lazy";
+      if (images[i]) {
+        const img = document.createElement("img");
+        img.src = images[i].src;
+        img.alt = "Obraz " + (i + 1);
+        img.loading = "lazy";
+        tile.appendChild(img);
 
-      tile.appendChild(img);
-      tile.addEventListener("click", () => tile.classList.toggle("selected"));
+        tile.addEventListener("click", () => tile.classList.toggle("selected"));
+      } else {
+        // puste kafelki tylko dla wyglądu 3x3
+        tile.style.background = "#eee";
+        tile.style.cursor = "default";
+      }
+
       grid.appendChild(tile);
-    });
+    }
 
     function getSelectedIdx() {
-      return [...document.querySelectorAll(".tile.selected")]
+      return [...document.querySelectorAll(".cap-tile.selected")]
         .map(t => Number(t.dataset.idx))
         .sort((a,b)=>a-b);
     }
@@ -229,7 +304,7 @@
     }
 
     document.getElementById("resetBtn").addEventListener("click", () => {
-      document.querySelectorAll(".tile.selected").forEach(t => t.classList.remove("selected"));
+      document.querySelectorAll(".cap-tile.selected").forEach(t => t.classList.remove("selected"));
       hint.textContent = "";
     });
 
@@ -237,7 +312,10 @@
       const sel = getSelectedIdx();
       const cor = getCorrectIdx();
 
-      const ok = sel.length === cor.length && sel.every((v,i)=>v===cor[i]);
+      // Uwzględnij tylko te indeksy, które mają realne zdjęcia (0..images.length-1)
+      const selFiltered = sel.filter(i => i >= 0 && i < images.length);
+
+      const ok = selFiltered.length === cor.length && selFiltered.every((v,i)=>v===cor[i]);
 
       if (ok) {
         hint.textContent = "Super! 💘";
@@ -247,15 +325,14 @@
         hint.textContent = "Nie tym razem 😄 Spróbuj jeszcze!";
       }
     });
-    // ====== KONIEC: weryfikacja ======
 
-
-    // imię z parametru w URL: ?imie=Ania
+    // ====== IMIĘ Z PARAMETRU URL ======
+    // np. ?imie=Ania
     const params = new URLSearchParams(location.search);
     const imie = params.get("imie");
     if (imie) document.getElementById("name").textContent = imie;
 
-    // serduszka w tle (działają niezależnie)
+    // ====== SERDUSZKA W TLE ======
     const hearts = ["💖","💘","💕","❤️","💗"];
     for (let i=0;i<18;i++){
       const s = document.createElement("div");
@@ -268,12 +345,13 @@
       document.body.appendChild(s);
     }
 
+    // ====== KLIK "TAK" ======
     document.getElementById("yesBtn").onclick = () => {
       document.getElementById("reveal").style.display = "block";
       confetti();
     };
 
-    // "Nie" ucieka :)
+    // ====== "NIE" UCIEKA ======
     const noBtn = document.getElementById("noBtn");
     noBtn.onmouseover = () => {
       const card = document.getElementById("card").getBoundingClientRect();
@@ -284,7 +362,7 @@
       noBtn.style.top  = y + "px";
     };
 
-    // małe confetti bez bibliotek
+    // ====== CONFETTI ======
     function confetti(){
       for(let i=0;i<120;i++){
         const p=document.createElement("div");
@@ -302,12 +380,14 @@
         const t=setInterval(()=>{
           x+=Math.cos(ang)*vel;
           y+=Math.sin(ang)*vel;
-          vy+=0.25; y+=vy; // grawitacja
+          vy+=0.25; y+=vy;
           p.style.transform=`translate(${x}px, ${y}px) rotate(${i*3}deg)`;
         },16);
         setTimeout(()=>{clearInterval(t); p.remove();}, 1200+Math.random()*600);
       }
     }
   </script>
+
 </body>
 </html>
+
