@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Walentynka 💘</title>
+
   <style>
     :root { --bg1:#ffdde1; --bg2:#ee9ca7; }
     *{box-sizing:border-box}
@@ -15,6 +16,84 @@
                   linear-gradient(135deg, var(--bg1), var(--bg2));
       overflow:hidden;
     }
+
+    /* ====== NOWE: EKRAN WERYFIKACJI ====== */
+    .hidden{ display:none; }
+
+    .gate{
+      width:min(720px, 94vw);
+      background: rgba(255,255,255,.78);
+      border:1px solid rgba(255,255,255,.55);
+      border-radius:24px;
+      padding:22px 18px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.18);
+      text-align:center;
+      backdrop-filter: blur(10px);
+      position:relative;
+    }
+    .gate h1{margin:0 0 8px; font-size:clamp(24px, 4.5vw, 34px);}
+    .gate p{margin:10px 0; font-size:clamp(15px, 2.6vw, 17px); line-height:1.5;}
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+      margin:14px 0 10px;
+    }
+    .tile{
+      position:relative;
+      border-radius:16px;
+      overflow:hidden;
+      cursor:pointer;
+      border:2px solid transparent;
+      background:#fff;
+      aspect-ratio: 1 / 1;
+      box-shadow: 0 10px 24px rgba(0,0,0,.12);
+      user-select:none;
+    }
+    .tile img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      user-select:none;
+      pointer-events:none;
+    }
+    .tile.selected{
+      border-color:#ff3b6b;
+    }
+    .tile.selected::after{
+      content:"✓";
+      position:absolute;
+      right:10px; top:8px;
+      width:28px; height:28px;
+      display:grid; place-items:center;
+      border-radius:999px;
+      background:#ff3b6b;
+      color:#fff;
+      font-weight:800;
+      box-shadow: 0 8px 18px rgba(0,0,0,.2);
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .actions button{
+      border:0; padding:12px 16px; border-radius:14px; cursor:pointer;
+      font-weight:600; font-size:16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.12);
+      transition: transform .08s ease;
+    }
+    .actions button:active{transform: translateY(1px) scale(.99);}
+    .primary{background:#ff3b6b; color:#fff;}
+    .ghost{background:rgba(255,255,255,.85); color:#111;}
+    .hint{ margin:10px 0 0; font-size:14px; opacity:.85; min-height: 18px; }
+    /* ====== KONIEC: WERYFIKACJA ====== */
+
     .card{
       width:min(560px, 92vw);
       background: rgba(255,255,255,.75);
@@ -39,6 +118,7 @@
     .yes{background:#ff3b6b; color:#fff;}
     .no{background:#ffffff; color:#111;}
     .small{font-size:13px; opacity:.8; margin-top:14px}
+
     /* serduszka */
     .heart{
       position:absolute; left:var(--x); top:110%;
@@ -64,8 +144,27 @@
     }
   </style>
 </head>
+
 <body>
-  <div class="card" id="card">
+
+  <!-- ====== NOWE: "Czy jesteś robotem" (siatka zdjęć) ====== -->
+  <div class="gate" id="gate">
+    <h1>Mała weryfikacja 😄</h1>
+    <p>Wybierz zdjęcia, na których jest <b>Twoja Walentynka</b> 💘</p>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="actions">
+      <button class="primary" id="checkBtn">Sprawdź</button>
+      <button class="ghost" id="resetBtn">Wyczyść</button>
+    </div>
+
+    <p class="hint" id="hint"></p>
+  </div>
+  <!-- ====== KONIEC: weryfikacja ====== -->
+
+  <!-- ====== Twoja karta (ukryta do czasu przejścia weryfikacji) ====== -->
+  <div class="card hidden" id="card">
     <h1>Misiu Pysiu <span id="name">, Mój Królisiu</span> 💘</h1>
     <p> Mam jedno pytanie…</p>
     <p style="font-size:20px; font-weight:700;">Zostaniesz moją Walentynką? (wybierz dobrze)</p>
@@ -79,15 +178,84 @@
       <p style="margin:0; font-weight:700;">Dobry wybór!</p>
       <p style="margin:8px 0 0;">Dobry wybór... <b>w nagrodę będzie buziaczek</b>. 😉</p>
     </div>
+
+    <div class="small">Tip: możesz dodać imię w linku: <code>?imie=Ania</code></div>
   </div>
 
   <script>
+    // ====== NOWE: ustawienie zdjęć do weryfikacji ======
+    // Masz w repo: img/1.png ... img/7.png
+    // USTAW correct:true przy tych numerach, gdzie jest "Twoja walentynka"
+    const images = [
+      { src: "img/1.png", correct: true },
+      { src: "img/2.png", correct: true },
+      { src: "img/3.png", correct: true },
+      { src: "img/4.png", correct: true },
+      { src: "img/5.png", correct: true },
+      { src: "img/6.png", correct: true },
+      { src: "img/7.png", correct: true },
+    ];
+
+    const grid = document.getElementById("grid");
+    const hint = document.getElementById("hint");
+
+    // render kafelków
+    images.forEach((it, idx) => {
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.dataset.idx = idx;
+
+      const img = document.createElement("img");
+      img.src = it.src;
+      img.alt = "Obraz " + (idx + 1);
+      img.loading = "lazy";
+
+      tile.appendChild(img);
+      tile.addEventListener("click", () => tile.classList.toggle("selected"));
+      grid.appendChild(tile);
+    });
+
+    function getSelectedIdx() {
+      return [...document.querySelectorAll(".tile.selected")]
+        .map(t => Number(t.dataset.idx))
+        .sort((a,b)=>a-b);
+    }
+
+    function getCorrectIdx() {
+      return images
+        .map((it, i) => it.correct ? i : null)
+        .filter(v => v !== null)
+        .sort((a,b)=>a-b);
+    }
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.querySelectorAll(".tile.selected").forEach(t => t.classList.remove("selected"));
+      hint.textContent = "";
+    });
+
+    document.getElementById("checkBtn").addEventListener("click", () => {
+      const sel = getSelectedIdx();
+      const cor = getCorrectIdx();
+
+      const ok = sel.length === cor.length && sel.every((v,i)=>v===cor[i]);
+
+      if (ok) {
+        hint.textContent = "Super! 💘";
+        document.getElementById("gate").classList.add("hidden");
+        document.getElementById("card").classList.remove("hidden");
+      } else {
+        hint.textContent = "Nie tym razem 😄 Spróbuj jeszcze!";
+      }
+    });
+    // ====== KONIEC: weryfikacja ======
+
+
     // imię z parametru w URL: ?imie=Ania
     const params = new URLSearchParams(location.search);
     const imie = params.get("imie");
     if (imie) document.getElementById("name").textContent = imie;
 
-    // serduszka w tle
+    // serduszka w tle (działają niezależnie)
     const hearts = ["💖","💘","💕","❤️","💗"];
     for (let i=0;i<18;i++){
       const s = document.createElement("div");
@@ -114,16 +282,6 @@
       noBtn.style.position = "absolute";
       noBtn.style.left = x + "px";
       noBtn.style.top  = y + "px";
-    };
-
-    // kopiowanie linku
-    document.getElementById("copyBtn").onclick = async () => {
-      try{
-        await navigator.clipboard.writeText(location.href);
-        alert("Skopiowane! Wyślij ten link 😊");
-      }catch(e){
-        prompt("Skopiuj ręcznie:", location.href);
-      }
     };
 
     // małe confetti bez bibliotek
