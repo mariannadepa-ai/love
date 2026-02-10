@@ -177,7 +177,6 @@
     button:active{transform: translateY(1px) scale(.99);}
     .yes{background:#ff3b6b; color:#fff;}
     .no{background:#ffffff; color:#111;}
-    .small{font-size:13px; opacity:.8; margin-top:14px}
 
     /* serduszka */
     .heart{
@@ -196,13 +195,24 @@
       to{ transform: translateY(-140vh) rotate(360deg); opacity:0;}
     }
 
-    .reveal{
-      margin-top:16px;
-      padding:14px 16px;
-      border-radius:18px;
-      background: rgba(255,255,255,.85);
-      border: 1px dashed rgba(255,59,107,.55);
-      display:none;
+    /* ====== EKRAN ATAKU MIŁOŚCI ====== */
+    .attack{
+      width:min(560px, 92vw);
+      background: rgba(255,255,255,.9);
+      border:1px solid rgba(255,255,255,.65);
+      border-radius:24px;
+      padding:22px 18px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.18);
+      text-align:center;
+      position:relative;
+      z-index: 2;
+      backdrop-filter: blur(10px);
+    }
+    .attack-title{
+      font-size:clamp(28px, 6vw, 44px);
+      font-weight:900;
+      letter-spacing:.6px;
+      margin:0 0 12px;
     }
   </style>
 </head>
@@ -239,18 +249,25 @@
       <button class="yes" id="yesBtn">TAK ❤️</button>
       <button class="no" id="noBtn">Nie 🙈</button>
     </div>
+  </div>
 
-    <div class="reveal" id="reveal">
-      <p style="margin:0; font-weight:700;">Dobry wybór!</p>
-      <p style="margin:8px 0 0;">Dobry wybór... <b>w nagrodę będzie buziaczek</b>. 😉</p>
+  <!-- ====== ATAK MIŁOŚCI (ukryty do czasu kliknięcia TAK) ====== -->
+  <div class="attack hidden" id="loveAttack">
+    <div class="attack-title">ATAK MIŁOŚCI!!!</div>
+
+    <div class="tenor-gif-embed"
+         data-postid="26312790"
+         data-share-method="host"
+         data-aspect-ratio="1.2549"
+         data-width="100%">
+      <a href="https://tenor.com/view/bugcat-capoo-bugcat-capoo-tutu-hug-gif-26312790">Bugcat Capoo Sticker</a>
+      from <a href="https://tenor.com/search/bugcat-stickers">Bugcat Stickers</a>
     </div>
-
   </div>
 
   <script>
     // ====== USTAWIENIA WERYFIKACJI ======
-    // Masz w repo: img/1.png ... img/7.png
-    // USTAW correct:true przy tych numerach, gdzie jest "Twoja walentynka"
+    // USTAW correct:true tylko dla tych obrazów, które mają być "walentynką"
     const images = [
       { src: "img/1.png", correct: true },
       { src: "img/2.png", correct: true },
@@ -266,27 +283,19 @@
     const grid = document.getElementById("grid");
     const hint = document.getElementById("hint");
 
-    // Render kafelków (3x3 look: jeśli masz mniej niż 9 zdjęć, resztę wypełniamy "pustymi" kafelkami)
-    const tilesToShow = 9;
-    for (let i = 0; i < tilesToShow; i++) {
+    // Render kafelków 3x3
+    for (let i = 0; i < 9; i++) {
       const tile = document.createElement("div");
       tile.className = "cap-tile";
       tile.dataset.idx = String(i);
 
-      if (images[i]) {
-        const img = document.createElement("img");
-        img.src = images[i].src;
-        img.alt = "Obraz " + (i + 1);
-        img.loading = "lazy";
-        tile.appendChild(img);
+      const img = document.createElement("img");
+      img.src = images[i].src;
+      img.alt = "Obraz " + (i + 1);
+      img.loading = "lazy";
+      tile.appendChild(img);
 
-        tile.addEventListener("click", () => tile.classList.toggle("selected"));
-      } else {
-        // puste kafelki tylko dla wyglądu 3x3
-        tile.style.background = "#eee";
-        tile.style.cursor = "default";
-      }
-
+      tile.addEventListener("click", () => tile.classList.toggle("selected"));
       grid.appendChild(tile);
     }
 
@@ -312,10 +321,7 @@
       const sel = getSelectedIdx();
       const cor = getCorrectIdx();
 
-      // Uwzględnij tylko te indeksy, które mają realne zdjęcia (0..images.length-1)
-      const selFiltered = sel.filter(i => i >= 0 && i < images.length);
-
-      const ok = selFiltered.length === cor.length && selFiltered.every((v,i)=>v===cor[i]);
+      const ok = sel.length === cor.length && sel.every((v,i)=>v===cor[i]);
 
       if (ok) {
         hint.textContent = "Super! 💘";
@@ -327,7 +333,6 @@
     });
 
     // ====== IMIĘ Z PARAMETRU URL ======
-    // np. ?imie=Ania
     const params = new URLSearchParams(location.search);
     const imie = params.get("imie");
     if (imie) document.getElementById("name").textContent = imie;
@@ -345,9 +350,13 @@
       document.body.appendChild(s);
     }
 
-    // ====== KLIK "TAK" ======
+    // ====== KLIK "TAK" => ATAK MIŁOŚCI ======
     document.getElementById("yesBtn").onclick = () => {
-      document.getElementById("reveal").style.display = "block";
+      // ukryj kartę i pokaż tylko ekran ataku
+      document.getElementById("card").classList.add("hidden");
+      document.getElementById("loveAttack").classList.remove("hidden");
+
+      // opcjonalnie: confetti
       confetti();
     };
 
@@ -388,6 +397,8 @@
     }
   </script>
 
+  <!-- Tenor embed: tylko raz, na końcu -->
+  <script async src="https://tenor.com/embed.js"></script>
+
 </body>
 </html>
-
