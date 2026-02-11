@@ -17,15 +17,16 @@
       overflow:hidden;
     }
 
-    /* ====== KLASYCZNY LOOK ====== */
     .hidden{ display:none; }
 
-    /* ====== "CHECKBOX CAPTCHA" (styl reCAPTCHA) ====== */
+    /* =========================
+       CHECKBOX CAPTCHA (jak oryginał)
+       ========================= */
     .checkwrap{
       width:min(360px, 94vw);
       background:#fff;
       border:1px solid #d7d7d7;
-      border-radius:10px;
+      border-radius:3px;
       box-shadow: 0 18px 60px rgba(0,0,0,.18);
       overflow:hidden;
       font-family: Arial, system-ui, sans-serif;
@@ -38,8 +39,8 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      padding:16px 16px;
-      background:#fff;
+      padding:14px 14px;
+      background:#f9f9f9;
     }
 
     .checkleft{
@@ -49,31 +50,46 @@
       min-width:0;
     }
 
-    .checkbox{
+    /* “pudełko” jak reCAPTCHA */
+    .box{
       width:28px; height:28px;
       border:2px solid #c7c7c7;
-      border-radius:4px;
+      border-radius:2px;
+      background:#fff;
       display:grid;
       place-items:center;
       cursor:pointer;
       user-select:none;
-      background:#fff;
-      flex: 0 0 auto;
+      position:relative;
+      flex:0 0 auto;
     }
-    .checkbox.checked{
-      border-color:#2f74ff;
+
+    /* spinner w środku */
+    .box .spinner{
+      width:16px; height:16px;
+      border:2px solid #bdbdbd;
+      border-top-color:#4a90e2;
+      border-radius:50%;
+      animation: spin .75s linear infinite;
+      display:none;
     }
-    .checkbox.checked::after{
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* zielony check po “weryfikacji” */
+    .box.verified{
+      border-color:#4CAF50;
+    }
+    .box.verified::after{
       content:"✓";
       font-weight:900;
-      font-size:18px;
-      color:#2f74ff;
+      font-size:20px;
+      color:#4CAF50;
       line-height:1;
     }
 
     .checktext{
-      font-size:16px;
-      font-weight:600;
+      font-size:15px;
+      font-weight:400;
       color:#111;
       white-space:nowrap;
       overflow:hidden;
@@ -83,15 +99,55 @@
     .checkright{
       text-align:right;
       flex:0 0 auto;
-      opacity:.9;
-      font-size:11px;
-      color:#666;
+      user-select:none;
     }
-    .checklogo{
-      font-weight:800;
-      letter-spacing:.2px;
-      color:#666;
+
+    /* proste “logo” + ikonka odświeżenia (CSS) */
+    .recapMark{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:6px;
+      margin-bottom:4px;
+    }
+    .recapIcon{
+      width:28px;
+      height:28px;
+      position:relative;
+    }
+    .recapIcon::before,
+    .recapIcon::after{
+      content:"";
+      position:absolute;
+      inset:2px;
+      border:5px solid #3b79ff;
+      border-right-color: transparent;
+      border-bottom-color: transparent;
+      border-radius:50%;
+      transform: rotate(35deg);
+      opacity:.9;
+    }
+    .recapIcon::after{
+      inset:6px;
+      border-width:5px;
+      border-color:#9aa3ad;
+      border-left-color: transparent;
+      border-top-color: transparent;
+      transform: rotate(35deg);
+      opacity:.9;
+    }
+
+    .recapText{
       font-size:12px;
+      font-weight:700;
+      color:#6d6d6d;
+      letter-spacing:.2px;
+      line-height:1;
+    }
+    .recapMeta{
+      font-size:10px;
+      color:#7a7a7a;
+      line-height:1.1;
     }
 
     .checkfooter{
@@ -101,7 +157,7 @@
       gap:10px;
       padding:10px 12px;
       border-top:1px solid #e6e6e6;
-      background:#fafafa;
+      background:#fff;
     }
     .checkhint{
       font-size:12px;
@@ -111,7 +167,7 @@
     .checkbtn{
       border:1px solid #d7d7d7;
       background:#fff;
-      border-radius:6px;
+      border-radius:4px;
       padding:8px 12px;
       cursor:pointer;
       font-weight:700;
@@ -127,7 +183,9 @@
       cursor:not-allowed;
     }
 
-    /* ====== OBRAZKOWA CAPTCHA ====== */
+    /* =========================
+       OBRAZKOWA CAPTCHA
+       ========================= */
     .captcha{
       width: min(360px, 94vw);
       background:#fff;
@@ -260,7 +318,9 @@
       width:38px;
     }
 
-    /* ====== KARTA ====== */
+    /* =========================
+       KARTA + ATAK
+       ========================= */
     .card{
       width:min(560px, 92vw);
       background: rgba(255,255,255,.75);
@@ -286,7 +346,6 @@
     .yes{background:#ff3b6b; color:#fff;}
     .no{background:#ffffff; color:#111;}
 
-    /* serduszka */
     .heart{
       position:absolute; left:var(--x); top:110%;
       font-size: var(--s);
@@ -303,7 +362,6 @@
       to{ transform: translateY(-140vh) rotate(360deg); opacity:0;}
     }
 
-    /* ====== ATAK MIŁOŚCI ====== */
     .attack{
       width:min(560px, 92vw);
       background: rgba(255,255,255,.9);
@@ -331,13 +389,18 @@
   <div class="checkwrap" id="checkGate" role="dialog" aria-label="Weryfikacja checkbox">
     <div class="checkbody">
       <div class="checkleft">
-        <div class="checkbox" id="husbandBox" aria-label="Jestem mężem Mani" role="checkbox" aria-checked="false"></div>
+        <div class="box" id="husbandBox" role="checkbox" aria-checked="false" aria-label="Jestem mężem Mani">
+          <div class="spinner" id="spin"></div>
+        </div>
         <div class="checktext">Jestem mężem Mani</div>
       </div>
 
       <div class="checkright">
-        <div class="checklogo">reCAPTCHA</div>
-        <div>Privacy · Terms</div>
+        <div class="recapMark">
+          <div class="recapIcon" aria-hidden="true"></div>
+          <div class="recapText">reCAPTCHA</div>
+        </div>
+        <div class="recapMeta">Privacy - Terms</div>
       </div>
     </div>
 
@@ -394,31 +457,43 @@
   </div>
 
   <script>
-    // ====== przełączanie ekranów (zawsze jeden widoczny) ======
     function showOnly(idToShow){
       const ids = ["checkGate","gate","card","loveAttack"];
       ids.forEach(id => document.getElementById(id).classList.add("hidden"));
       document.getElementById(idToShow).classList.remove("hidden");
     }
 
-    // ====== 1) checkbox captcha ======
+    // ====== 1) checkbox captcha (bardziej jak oryginał) ======
     const husbandBox = document.getElementById("husbandBox");
+    const spinner = document.getElementById("spin");
     const checkNext = document.getElementById("checkNext");
     const checkHint = document.getElementById("checkHint");
-    let isChecked = false;
 
-    function toggleCheck(){
-      isChecked = !isChecked;
-      husbandBox.classList.toggle("checked", isChecked);
-      husbandBox.setAttribute("aria-checked", String(isChecked));
-      checkNext.disabled = !isChecked;
-      checkHint.textContent = isChecked ? "Zweryfikowano ✅" : "";
-    }
+    let isVerified = false;
+    let isWorking = false;
 
-    husbandBox.addEventListener("click", toggleCheck);
+    husbandBox.addEventListener("click", () => {
+      if (isVerified || isWorking) return;
+      isWorking = true;
+
+      // “weryfikacja” jak w reCAPTCHA: spinner chwilę kręci
+      husbandBox.setAttribute("aria-checked", "false");
+      checkHint.textContent = "Sprawdzam...";
+      spinner.style.display = "block";
+
+      setTimeout(() => {
+        spinner.style.display = "none";
+        husbandBox.classList.add("verified");
+        husbandBox.setAttribute("aria-checked", "true");
+        checkHint.textContent = "Zweryfikowano ✅";
+        checkNext.disabled = false;
+        isVerified = true;
+        isWorking = false;
+      }, 750);
+    });
 
     checkNext.addEventListener("click", () => {
-      if(!isChecked) return;
+      if (!isVerified) return;
       showOnly("gate");
     });
 
@@ -474,7 +549,6 @@
     document.getElementById("checkBtn").addEventListener("click", () => {
       const sel = getSelectedIdx();
       const cor = getCorrectIdx();
-
       const ok = sel.length === cor.length && sel.every((v,i)=>v===cor[i]);
 
       if (ok) {
@@ -545,13 +619,13 @@
       }
     }
 
-    // start od checkboxa
     showOnly("checkGate");
   </script>
 
   <script async src="https://tenor.com/embed.js"></script>
 </body>
 </html>
+
 
 
 
