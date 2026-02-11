@@ -20,6 +20,28 @@
     /* ====== KLASYCZNY LOOK (własny) ====== */
     .hidden{ display:none; }
 
+    /* wrapper: tytuł + captcha (bez odstępu) */
+    .gateWrap{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap: 0px; /* <- ZERO odstępu między napisem a captcha */
+      z-index: 2;
+    }
+
+    .top-title{
+      width:min(560px, 92vw);
+      text-align:center;
+      font-weight:900;
+      font-size:clamp(22px, 4.5vw, 34px);
+      letter-spacing:.3px;
+      margin: 0;              /* <- ZERO marginesu */
+      padding: 0;             /* <- ZERO paddingu */
+      line-height: 1.05;      /* trochę ciaśniej */
+      color:#111;
+      text-shadow: 0 10px 30px rgba(0,0,0,.12);
+    }
+
     .captcha{
       width: min(360px, 94vw);
       background:#fff;
@@ -30,6 +52,7 @@
       font-family: Arial, system-ui, sans-serif;
       position:relative;
       z-index: 2;
+      margin-top: 0; /* <- pewność, że nie robi się odstęp */
     }
 
     .captcha-header{
@@ -214,42 +237,32 @@
       letter-spacing:.6px;
       margin:0 0 12px;
     }
-
-    .top-title{
-  width:min(560px, 92vw);
-  text-align:center;
-  font-weight:900;
-  font-size:clamp(22px, 4.5vw, 34px);
-  letter-spacing:.3px;
-  margin: 0 0 4px;
-  color:#111;
-  text-shadow: 0 10px 30px rgba(0,0,0,.12);
-  z-index: 2;
-}
   </style>
 </head>
 
 <body>
 
-  <!-- ====== WERYFIKACJA (klasyczny wygląd) ====== -->
-  <div class="top-title">Potwierdź, że jesteś moim mężem</div>
-  
-  <div class="captcha" id="gate" role="dialog" aria-label="Weryfikacja obrazkowa">
-    <div class="captcha-header">
-      <div class="captcha-title">Wybierz wszystkie obrazy z</div>
-      <div class="captcha-subtitle">Twoją Walentynką</div>
-    </div>
+  <!-- ====== WERYFIKACJA: tytuł + captcha w jednym wrapperze ====== -->
+  <div class="gateWrap" id="gateWrap">
+    <div class="top-title">Potwierdź, że jesteś moim mężem</div>
 
-    <div class="captcha-body">
-      <div class="captcha-grid" id="grid"></div>
-    </div>
+    <div class="captcha" id="gate" role="dialog" aria-label="Weryfikacja obrazkowa">
+      <div class="captcha-header">
+        <div class="captcha-title">Wybierz wszystkie obrazy z</div>
+        <div class="captcha-subtitle">Twoją Walentynką</div>
+      </div>
 
-    <div class="captcha-footer">
-      <div class="captcha-status" id="hint"></div>
+      <div class="captcha-body">
+        <div class="captcha-grid" id="grid"></div>
+      </div>
 
-      <div class="captcha-actions">
-        <button class="cap-btn ghost" id="resetBtn" title="Wyczyść zaznaczenie">↻</button>
-        <button class="cap-btn primary" id="checkBtn">Sprawdź</button>
+      <div class="captcha-footer">
+        <div class="captcha-status" id="hint"></div>
+
+        <div class="captcha-actions">
+          <button class="cap-btn ghost" id="resetBtn" title="Wyczyść zaznaczenie">↻</button>
+          <button class="cap-btn primary" id="checkBtn">Sprawdź</button>
+        </div>
       </div>
     </div>
   </div>
@@ -339,7 +352,7 @@
 
       if (ok) {
         hint.textContent = "Super! 💘";
-        document.getElementById("gate").classList.add("hidden");
+        document.getElementById("gateWrap").classList.add("hidden"); // <- ukrywa i tytuł i captcha
         document.getElementById("card").classList.remove("hidden");
       } else {
         hint.textContent = "CO?!!! Wybieraj jeszcze raz!";
@@ -366,11 +379,8 @@
 
     // ====== KLIK "TAK" => ATAK MIŁOŚCI ======
     document.getElementById("yesBtn").onclick = () => {
-      // ukryj kartę i pokaż tylko ekran ataku
       document.getElementById("card").classList.add("hidden");
       document.getElementById("loveAttack").classList.remove("hidden");
-
-      // opcjonalnie: confetti
       confetti();
     };
 
@@ -416,3 +426,4 @@
 
 </body>
 </html>
+
