@@ -17,7 +17,7 @@
       overflow:hidden;
     }
 
-    .hidden{ display:none; }
+    .hidden{ display:none !important; }
 
     /* wrapper: tytuł + captcha (bez odstępu) */
     .gateWrap{
@@ -59,21 +59,9 @@
       padding:12px 12px;
       text-align:left;
     }
-    .captcha-title{
-      font-size:12px;
-      opacity:.95;
-      letter-spacing:.2px;
-    }
-    .captcha-subtitle{
-      font-size:18px;
-      font-weight:700;
-      margin-top:2px;
-      line-height:1.1;
-    }
-    .captcha-body{
-      padding:10px;
-      background:#f6f6f6;
-    }
+    .captcha-title{ font-size:12px; opacity:.95; letter-spacing:.2px; }
+    .captcha-subtitle{ font-size:18px; font-weight:700; margin-top:2px; line-height:1.1; }
+    .captcha-body{ padding:10px; background:#f6f6f6; }
     .captcha-grid{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -132,15 +120,8 @@
       border-top:1px solid #e6e6e6;
       background:#fff;
     }
-    .captcha-status{
-      font-size:12px;
-      color:#555;
-      min-height:16px;
-    }
-    .captcha-actions{
-      display:flex;
-      gap:8px;
-    }
+    .captcha-status{ font-size:12px; color:#555; min-height:16px; }
+    .captcha-actions{ display:flex; gap:8px; }
     .cap-btn{
       border:1px solid #d7d7d7;
       background:#fff;
@@ -150,14 +131,8 @@
       font-weight:700;
       font-size:13px;
     }
-    .cap-btn.primary{
-      background:#2f74ff;
-      color:#fff;
-      border-color:#2f74ff;
-    }
-    .cap-btn.ghost{
-      width:38px;
-    }
+    .cap-btn.primary{ background:#2f74ff; color:#fff; border-color:#2f74ff; }
+    .cap-btn.ghost{ width:38px; }
 
     /* ====== KARTA ====== */
     .card{
@@ -226,7 +201,7 @@
 
 <body>
 
-  <!-- 1 widok: napis + captcha -->
+  <!-- 1 widok -->
   <div class="gateWrap" id="gateWrap">
     <div class="top-title">Potwierdź, że jesteś moim mężem</div>
 
@@ -251,7 +226,7 @@
     </div>
   </div>
 
-  <!-- 2 widok: pytanie -->
+  <!-- 2 widok -->
   <div class="card hidden" id="card">
     <h1>Misiu Pysiu<span id="name">, Mój Królisiu</span> 💘</h1>
     <p style="font-size:20px; font-weight:700;">Zostaniesz moją Walentynką? (wybierz dobrze)</p>
@@ -262,7 +237,7 @@
     </div>
   </div>
 
-  <!-- 3 widok: atak miłości -->
+  <!-- 3 widok -->
   <div class="attack hidden" id="loveAttack">
     <div class="attack-title">ATAK MIŁOŚCI!!!</div>
 
@@ -277,7 +252,7 @@
   </div>
 
   <script>
-    // ====== nawigacja ekranów: zawsze widoczny tylko jeden ======
+    // ====== WIDOKI: zawsze tylko jeden ======
     function showStep(step){
       const gateWrap = document.getElementById("gateWrap");
       const card = document.getElementById("card");
@@ -297,7 +272,7 @@
       document.getElementById("hint").textContent = "";
     }
 
-    // ====== USTAWIENIA WERYFIKACJI ======
+    // ====== CAPTCHA USTAWIENIA ======
     const images = [
       { src: "img/1.png", correct: true },
       { src: "img/2.png", correct: true },
@@ -313,7 +288,7 @@
     const grid = document.getElementById("grid");
     const hint = document.getElementById("hint");
 
-    // Render kafelków 3x3
+    // render 3x3
     for (let i = 0; i < 9; i++) {
       const tile = document.createElement("div");
       tile.className = "cap-tile";
@@ -342,30 +317,27 @@
         .sort((a,b)=>a-b);
     }
 
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      resetCaptchaUI();
-    });
+    document.getElementById("resetBtn").addEventListener("click", resetCaptchaUI);
 
     document.getElementById("checkBtn").addEventListener("click", () => {
       const sel = getSelectedIdx();
       const cor = getCorrectIdx();
-
       const ok = sel.length === cor.length && sel.every((v,i)=>v===cor[i]);
 
       if (ok) {
         resetCaptchaUI();
-        showStep(2); // przejście do pytania
+        showStep(2);
       } else {
         hint.textContent = "CO?!!! Wybieraj jeszcze raz!";
       }
     });
 
-    // ====== IMIĘ Z PARAMETRU URL ======
+    // imię z URL
     const params = new URLSearchParams(location.search);
     const imie = params.get("imie");
     if (imie) document.getElementById("name").textContent = imie;
 
-    // ====== SERDUSZKA W TLE ======
+    // serduszka
     const hearts = ["💖","💘","💕","❤️","💗"];
     for (let i=0;i<18;i++){
       const s = document.createElement("div");
@@ -378,13 +350,13 @@
       document.body.appendChild(s);
     }
 
-    // ====== KLIK "TAK" => ATAK MIŁOŚCI ======
+    // TAK -> atak miłości
     document.getElementById("yesBtn").onclick = () => {
       showStep(3);
       confetti();
     };
 
-    // ====== "NIE" UCIEKA ======
+    // NIE ucieka
     const noBtn = document.getElementById("noBtn");
     noBtn.onmouseover = () => {
       const card = document.getElementById("card").getBoundingClientRect();
@@ -395,7 +367,7 @@
       noBtn.style.top  = y + "px";
     };
 
-    // ====== CONFETTI ======
+    // confetti
     function confetti(){
       for(let i=0;i<120;i++){
         const p=document.createElement("div");
@@ -420,11 +392,12 @@
       }
     }
 
-    // start zawsze od 1 widoku
+    // start: tylko 1 widok
     showStep(1);
   </script>
 
   <script async src="https://tenor.com/embed.js"></script>
 </body>
 </html>
+
 
