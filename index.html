@@ -17,9 +17,117 @@
       overflow:hidden;
     }
 
-    /* ====== KLASYCZNY LOOK (własny) ====== */
+    /* ====== KLASYCZNY LOOK ====== */
     .hidden{ display:none; }
 
+    /* ====== "CHECKBOX CAPTCHA" (styl reCAPTCHA) ====== */
+    .checkwrap{
+      width:min(360px, 94vw);
+      background:#fff;
+      border:1px solid #d7d7d7;
+      border-radius:10px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.18);
+      overflow:hidden;
+      font-family: Arial, system-ui, sans-serif;
+      position:relative;
+      z-index:2;
+    }
+
+    .checkbody{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:16px 16px;
+      background:#fff;
+    }
+
+    .checkleft{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .checkbox{
+      width:28px; height:28px;
+      border:2px solid #c7c7c7;
+      border-radius:4px;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      user-select:none;
+      background:#fff;
+      flex: 0 0 auto;
+    }
+    .checkbox.checked{
+      border-color:#2f74ff;
+    }
+    .checkbox.checked::after{
+      content:"✓";
+      font-weight:900;
+      font-size:18px;
+      color:#2f74ff;
+      line-height:1;
+    }
+
+    .checktext{
+      font-size:16px;
+      font-weight:600;
+      color:#111;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .checkright{
+      text-align:right;
+      flex:0 0 auto;
+      opacity:.9;
+      font-size:11px;
+      color:#666;
+    }
+    .checklogo{
+      font-weight:800;
+      letter-spacing:.2px;
+      color:#666;
+      font-size:12px;
+    }
+
+    .checkfooter{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-top:1px solid #e6e6e6;
+      background:#fafafa;
+    }
+    .checkhint{
+      font-size:12px;
+      color:#555;
+      min-height:16px;
+    }
+    .checkbtn{
+      border:1px solid #d7d7d7;
+      background:#fff;
+      border-radius:6px;
+      padding:8px 12px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:13px;
+    }
+    .checkbtn.primary{
+      background:#2f74ff;
+      color:#fff;
+      border-color:#2f74ff;
+    }
+    .checkbtn.primary:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+
+    /* ====== OBRAZKOWA CAPTCHA ====== */
     .captcha{
       width: min(360px, 94vw);
       background:#fff;
@@ -152,7 +260,7 @@
       width:38px;
     }
 
-    /* ====== TWOJA KARTA ====== */
+    /* ====== KARTA ====== */
     .card{
       width:min(560px, 92vw);
       background: rgba(255,255,255,.75);
@@ -195,7 +303,7 @@
       to{ transform: translateY(-140vh) rotate(360deg); opacity:0;}
     }
 
-    /* ====== EKRAN ATAKU MIŁOŚCI ====== */
+    /* ====== ATAK MIŁOŚCI ====== */
     .attack{
       width:min(560px, 92vw);
       background: rgba(255,255,255,.9);
@@ -219,8 +327,28 @@
 
 <body>
 
-  <!-- ====== WERYFIKACJA (klasyczny wygląd) ====== -->
-  <div class="captcha" id="gate" role="dialog" aria-label="Weryfikacja obrazkowa">
+  <!-- 1) CHECKBOX CAPTCHA -->
+  <div class="checkwrap" id="checkGate" role="dialog" aria-label="Weryfikacja checkbox">
+    <div class="checkbody">
+      <div class="checkleft">
+        <div class="checkbox" id="husbandBox" aria-label="Jestem mężem Mani" role="checkbox" aria-checked="false"></div>
+        <div class="checktext">Jestem mężem Mani</div>
+      </div>
+
+      <div class="checkright">
+        <div class="checklogo">reCAPTCHA</div>
+        <div>Privacy · Terms</div>
+      </div>
+    </div>
+
+    <div class="checkfooter">
+      <div class="checkhint" id="checkHint"></div>
+      <button class="checkbtn primary" id="checkNext" disabled>Dalej</button>
+    </div>
+  </div>
+
+  <!-- 2) OBRAZKOWA CAPTCHA -->
+  <div class="captcha hidden" id="gate" role="dialog" aria-label="Weryfikacja obrazkowa">
     <div class="captcha-header">
       <div class="captcha-title">Wybierz wszystkie obrazy z</div>
       <div class="captcha-subtitle">Twoją Walentynką</div>
@@ -240,7 +368,7 @@
     </div>
   </div>
 
-  <!-- ====== TWOJA KARTA (ukryta do czasu przejścia weryfikacji) ====== -->
+  <!-- 3) PYTANIE -->
   <div class="card hidden" id="card">
     <h1>Misiu Pysiu<span id="name">, Mój Królisiu</span> 💘</h1>
     <p style="font-size:20px; font-weight:700;">Zostaniesz moją Walentynką? (wybierz dobrze)</p>
@@ -251,7 +379,7 @@
     </div>
   </div>
 
-  <!-- ====== ATAK MIŁOŚCI (ukryty do czasu kliknięcia TAK) ====== -->
+  <!-- 4) ATAK MIŁOŚCI -->
   <div class="attack hidden" id="loveAttack">
     <div class="attack-title">ATAK MIŁOŚCI!!!</div>
 
@@ -266,8 +394,35 @@
   </div>
 
   <script>
-    // ====== USTAWIENIA WERYFIKACJI ======
-    // USTAW correct:true tylko dla tych obrazów, które mają być "walentynką"
+    // ====== przełączanie ekranów (zawsze jeden widoczny) ======
+    function showOnly(idToShow){
+      const ids = ["checkGate","gate","card","loveAttack"];
+      ids.forEach(id => document.getElementById(id).classList.add("hidden"));
+      document.getElementById(idToShow).classList.remove("hidden");
+    }
+
+    // ====== 1) checkbox captcha ======
+    const husbandBox = document.getElementById("husbandBox");
+    const checkNext = document.getElementById("checkNext");
+    const checkHint = document.getElementById("checkHint");
+    let isChecked = false;
+
+    function toggleCheck(){
+      isChecked = !isChecked;
+      husbandBox.classList.toggle("checked", isChecked);
+      husbandBox.setAttribute("aria-checked", String(isChecked));
+      checkNext.disabled = !isChecked;
+      checkHint.textContent = isChecked ? "Zweryfikowano ✅" : "";
+    }
+
+    husbandBox.addEventListener("click", toggleCheck);
+
+    checkNext.addEventListener("click", () => {
+      if(!isChecked) return;
+      showOnly("gate");
+    });
+
+    // ====== 2) captcha obrazkowa ======
     const images = [
       { src: "img/1.png", correct: true },
       { src: "img/2.png", correct: true },
@@ -283,7 +438,6 @@
     const grid = document.getElementById("grid");
     const hint = document.getElementById("hint");
 
-    // Render kafelków 3x3
     for (let i = 0; i < 9; i++) {
       const tile = document.createElement("div");
       tile.className = "cap-tile";
@@ -325,19 +479,18 @@
 
       if (ok) {
         hint.textContent = "Super! 💘";
-        document.getElementById("gate").classList.add("hidden");
-        document.getElementById("card").classList.remove("hidden");
+        showOnly("card");
       } else {
         hint.textContent = "Co??! Rób jeszcze raz...";
       }
     });
 
-    // ====== IMIĘ Z PARAMETRU URL ======
+    // ====== imię z URL ======
     const params = new URLSearchParams(location.search);
     const imie = params.get("imie");
     if (imie) document.getElementById("name").textContent = imie;
 
-    // ====== SERDUSZKA W TLE ======
+    // ====== serduszka ======
     const hearts = ["💖","💘","💕","❤️","💗"];
     for (let i=0;i<18;i++){
       const s = document.createElement("div");
@@ -350,17 +503,13 @@
       document.body.appendChild(s);
     }
 
-    // ====== KLIK "TAK" => ATAK MIŁOŚCI ======
+    // ====== TAK => atak miłości ======
     document.getElementById("yesBtn").onclick = () => {
-      // ukryj kartę i pokaż tylko ekran ataku
-      document.getElementById("card").classList.add("hidden");
-      document.getElementById("loveAttack").classList.remove("hidden");
-
-      // opcjonalnie: confetti
+      showOnly("loveAttack");
       confetti();
     };
 
-    // ====== "NIE" UCIEKA ======
+    // ====== NIE ucieka ======
     const noBtn = document.getElementById("noBtn");
     noBtn.onmouseover = () => {
       const card = document.getElementById("card").getBoundingClientRect();
@@ -371,7 +520,7 @@
       noBtn.style.top  = y + "px";
     };
 
-    // ====== CONFETTI ======
+    // ====== confetti ======
     function confetti(){
       for(let i=0;i<120;i++){
         const p=document.createElement("div");
@@ -395,13 +544,15 @@
         setTimeout(()=>{clearInterval(t); p.remove();}, 1200+Math.random()*600);
       }
     }
+
+    // start od checkboxa
+    showOnly("checkGate");
   </script>
 
-  <!-- Tenor embed: tylko raz, na końcu -->
   <script async src="https://tenor.com/embed.js"></script>
-
 </body>
 </html>
+
 
 
 
