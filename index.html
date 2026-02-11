@@ -467,11 +467,11 @@
 
     const COLS = 15;     // większe = bardziej skomplikowane
     const ROWS = 13;
-    const CELL = 24;     // większe = szersze korytarze
-    const WALL = 7;      // mniejsze = łatwiej (większe = trudniej)
+    const CELL = 30;     // większe = szersze korytarze
+    const WALL = 6;      // mniejsze = łatwiej (większe = trudniej)
     const MARGIN = 14;
 
-    const cursorR = 7;
+    const cursorR = 6;
     const cursor = { x: 0, y: 0 };
 
     const startPoint = { x: MARGIN + WALL + 10, y: MARGIN + WALL + 10 };
@@ -642,14 +642,15 @@
     }
 
     function hitWall(x,y){
-      const pts = [
-        [x, y],
-        [x+cursorR, y], [x-cursorR, y], [x, y+cursorR], [x, y-cursorR],
-        [x+cursorR*0.7, y+cursorR*0.7], [x-cursorR*0.7, y+cursorR*0.7],
-        [x+cursorR*0.7, y-cursorR*0.7], [x-cursorR*0.7, y-cursorR*0.7],
-      ];
-      return pts.some(([px,py]) => isWallAt(px,py));
-    }
+  const probe = Math.max(3, cursorR - 2); // sonda mniejsza niż kropka
+  const pts = [
+    [x, y],
+    [x+probe, y], [x-probe, y], [x, y+probe], [x, y-probe],
+    [x+probe*0.7, y+probe*0.7], [x-probe*0.7, y+probe*0.7],
+    [x+probe*0.7, y-probe*0.7], [x-probe*0.7, y-probe*0.7],
+  ];
+  return pts.some(([px,py]) => isWallAt(px,py));
+}
 
     function reachedGoal(x,y){
       const dx = x - goal.x;
