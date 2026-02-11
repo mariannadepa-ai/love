@@ -33,7 +33,7 @@
       font-weight:900;
       font-size:clamp(22px, 4.5vw, 34px);
       letter-spacing:.3px;
-      margin: 0 0 4px;
+      margin: 0 0 5px;
       padding: 0;
       line-height: 1.05;
       color:#111;
@@ -53,12 +53,7 @@
       z-index: 2;
       margin-top: 0;
     }
-    .captcha-header{
-      background:#2f74ff;
-      color:#fff;
-      padding:12px 12px;
-      text-align:left;
-    }
+    .captcha-header{ background:#2f74ff; color:#fff; padding:12px 12px; text-align:left; }
     .captcha-title{ font-size:12px; opacity:.95; letter-spacing:.2px; }
     .captcha-subtitle{ font-size:18px; font-weight:700; margin-top:2px; line-height:1.1; }
     .captcha-body{ padding:10px; background:#f6f6f6; }
@@ -133,6 +128,51 @@
     }
     .cap-btn.primary{ background:#2f74ff; color:#fff; border-color:#2f74ff; }
     .cap-btn.ghost{ width:38px; }
+
+    /* ====== LABIRYNT ====== */
+    .mazeWrap{
+      width:min(560px, 92vw);
+      background: rgba(255,255,255,.9);
+      border:1px solid rgba(255,255,255,.65);
+      border-radius:24px;
+      padding:18px 16px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.18);
+      text-align:center;
+      backdrop-filter: blur(10px);
+      z-index:2;
+    }
+    .mazeTitle{
+      font-weight:900;
+      font-size:clamp(18px, 3.5vw, 22px);
+      margin:0 0 4px;
+    }
+    .mazeSub{
+      font-size:13px;
+      opacity:.85;
+      margin:0 0 12px;
+    }
+    #maze{
+      width:min(360px, 90vw);
+      height:auto;
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,.12);
+      box-shadow: 0 12px 30px rgba(0,0,0,.12);
+      background:#fff;
+      display:block;
+      margin: 0 auto;
+    }
+    .mazeBtns{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      margin-top:12px;
+    }
+    .mazeHint{
+      font-size:12px;
+      color:#555;
+      min-height:16px;
+      margin-top:8px;
+    }
 
     /* ====== KARTA ====== */
     .card{
@@ -226,7 +266,20 @@
     </div>
   </div>
 
-  <!-- 2 widok -->
+  <!-- 2 widok: LABIRYNT -->
+  <div class="mazeWrap hidden" id="mazeGate" role="dialog" aria-label="Labirynt weryfikacyjny">
+    <div class="mazeTitle">Etap 2: Znajdź drogę do żony</div>
+
+    <canvas id="maze" width="360" height="360"></canvas>
+
+    <div class="mazeBtns">
+      <button class="cap-btn ghost" id="mazeReset" title="Reset">↻</button>
+      <button class="cap-btn primary" id="mazeStart">Start</button>
+    </div>
+    <div class="mazeHint" id="mazeHint"></div>
+  </div>
+
+  <!-- 3 widok: pytanie -->
   <div class="card hidden" id="card">
     <h1>Misiu Pysiu<span id="name">, Mój Królisiu</span> 💘</h1>
     <p style="font-size:20px; font-weight:700;">Zostaniesz moją Walentynką? (wybierz dobrze)</p>
@@ -237,7 +290,7 @@
     </div>
   </div>
 
-  <!-- 3 widok -->
+  <!-- 4 widok: atak miłości -->
   <div class="attack hidden" id="loveAttack">
     <div class="attack-title">ATAK MIŁOŚCI!!!</div>
 
@@ -255,16 +308,19 @@
     // ====== WIDOKI: zawsze tylko jeden ======
     function showStep(step){
       const gateWrap = document.getElementById("gateWrap");
+      const mazeGate = document.getElementById("mazeGate");
       const card = document.getElementById("card");
       const loveAttack = document.getElementById("loveAttack");
 
       gateWrap.classList.add("hidden");
+      mazeGate.classList.add("hidden");
       card.classList.add("hidden");
       loveAttack.classList.add("hidden");
 
       if (step === 1) gateWrap.classList.remove("hidden");
-      if (step === 2) card.classList.remove("hidden");
-      if (step === 3) loveAttack.classList.remove("hidden");
+      if (step === 2) mazeGate.classList.remove("hidden");
+      if (step === 3) card.classList.remove("hidden");
+      if (step === 4) loveAttack.classList.remove("hidden");
     }
 
     function resetCaptchaUI(){
@@ -288,7 +344,6 @@
     const grid = document.getElementById("grid");
     const hint = document.getElementById("hint");
 
-    // render 3x3
     for (let i = 0; i < 9; i++) {
       const tile = document.createElement("div");
       tile.className = "cap-tile";
@@ -326,18 +381,19 @@
 
       if (ok) {
         resetCaptchaUI();
-        showStep(2);
+        showStep(2); // -> labirynt
+        resetMaze("Kliknij Start 🙂");
       } else {
         hint.textContent = "CO?!!! Wybieraj jeszcze raz!";
       }
     });
 
-    // imię z URL
+    // ====== IMIĘ Z URL ======
     const params = new URLSearchParams(location.search);
     const imie = params.get("imie");
     if (imie) document.getElementById("name").textContent = imie;
 
-    // serduszka
+    // ====== SERDUSZKA ======
     const hearts = ["💖","💘","💕","❤️","💗"];
     for (let i=0;i<18;i++){
       const s = document.createElement("div");
@@ -350,13 +406,13 @@
       document.body.appendChild(s);
     }
 
-    // TAK -> atak miłości
+    // ====== TAK -> ATAK MIŁOŚCI ======
     document.getElementById("yesBtn").onclick = () => {
-      showStep(3);
+      showStep(4);
       confetti();
     };
 
-    // NIE ucieka
+    // ====== NIE UCIEKA ======
     const noBtn = document.getElementById("noBtn");
     noBtn.onmouseover = () => {
       const card = document.getElementById("card").getBoundingClientRect();
@@ -367,7 +423,7 @@
       noBtn.style.top  = y + "px";
     };
 
-    // confetti
+    // ====== CONFETTI ======
     function confetti(){
       for(let i=0;i<120;i++){
         const p=document.createElement("div");
@@ -392,6 +448,182 @@
       }
     }
 
+    // ====== LABIRYNT LOGIKA ======
+    const mazeCanvas = document.getElementById("maze");
+    const ctx = mazeCanvas.getContext("2d");
+    const mazeHint = document.getElementById("mazeHint");
+    const startBtn = document.getElementById("mazeStart");
+    const resetBtn = document.getElementById("mazeReset");
+
+    let started = false;
+
+    // start i cel
+    const startPoint = { x: 26, y: 26 };
+    const cursor = { x: startPoint.x, y: startPoint.y };
+    const cursorR = 6;
+
+    // użyj zdjęcia numer 1
+    const goalImgSrc = "img/1.png";
+    const goalImg = new Image();
+    goalImg.src = goalImgSrc;
+
+    const goal = { x: 308, y: 308, r: 26 };
+
+    // ściany labiryntu (prostokąty)
+    const walls = [
+      // ramka
+      {x:10,y:10,w:340,h:10},{x:10,y:340,w:340,h:10},{x:10,y:10,w:10,h:340},{x:340,y:10,w:10,h:340},
+
+      // wewnętrzne
+      {x:40,y:40,w:280,h:10},
+      {x:40,y:40,w:10,h:220},
+      {x:70,y:80,w:220,h:10},
+      {x:120,y:110,w:10,h:180},
+      {x:150,y:140,w:160,h:10},
+      {x:190,y:140,w:10,h:140},
+      {x:70,y:220,w:160,h:10},
+      {x:260,y:80,w:10,h:200},
+      {x:70,y:260,w:10,h:70},
+      {x:90,y:300,w:220,h:10},
+    ];
+
+    function drawMaze(){
+      ctx.clearRect(0,0,mazeCanvas.width, mazeCanvas.height);
+
+      // tło
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0,0,mazeCanvas.width, mazeCanvas.height);
+
+      // ściany
+      ctx.fillStyle = "#222";
+      walls.forEach(w => ctx.fillRect(w.x, w.y, w.w, w.h));
+
+      // start
+      ctx.fillStyle = "#2f74ff";
+      ctx.beginPath();
+      ctx.arc(startPoint.x, startPoint.y, 10, 0, Math.PI*2);
+      ctx.fill();
+
+      // cel (zdjęcie w kółku)
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(goal.x, goal.y, goal.r, 0, Math.PI*2);
+      ctx.clip();
+      if (goalImg.complete) {
+        ctx.drawImage(goalImg, goal.x-goal.r, goal.y-goal.r, goal.r*2, goal.r*2);
+      } else {
+        ctx.fillStyle = "#ffd1dc";
+        ctx.fill();
+      }
+      ctx.restore();
+
+      ctx.strokeStyle = "#ff3b6b";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(goal.x, goal.y, goal.r, 0, Math.PI*2);
+      ctx.stroke();
+
+      // kursor
+      ctx.fillStyle = "#ff3b6b";
+      ctx.beginPath();
+      ctx.arc(cursor.x, cursor.y, cursorR, 0, Math.PI*2);
+      ctx.fill();
+
+      // overlay info
+      if (!started) {
+        ctx.fillStyle = "rgba(0,0,0,.55)";
+        ctx.font = "14px Arial";
+        ctx.fillText("Kliknij Start i jedź do zdjęcia", 78, 24);
+      }
+    }
+
+    function resetMaze(msg){
+      started = false;
+      cursor.x = startPoint.x;
+      cursor.y = startPoint.y;
+      mazeHint.textContent = msg || "";
+      drawMaze();
+    }
+
+    function hitWall(x,y){
+      for (const w of walls) {
+        const closestX = Math.max(w.x, Math.min(x, w.x+w.w));
+        const closestY = Math.max(w.y, Math.min(y, w.y+w.h));
+        const dx = x - closestX;
+        const dy = y - closestY;
+        if (dx*dx + dy*dy <= cursorR*cursorR) return true;
+      }
+      return false;
+    }
+
+    function reachedGoal(x,y){
+      const dx = x - goal.x;
+      const dy = y - goal.y;
+      return (dx*dx + dy*dy) <= (goal.r*goal.r);
+    }
+
+    function canvasPosFromEvent(ev){
+      const rect = mazeCanvas.getBoundingClientRect();
+      const scaleX = mazeCanvas.width / rect.width;
+      const scaleY = mazeCanvas.height / rect.height;
+      const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+      const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+      return { x:(clientX-rect.left)*scaleX, y:(clientY-rect.top)*scaleY };
+    }
+
+    function onMove(ev){
+      if (!started) return;
+
+      const {x,y} = canvasPosFromEvent(ev);
+
+      // poza planszą
+      if (x<0 || y<0 || x>mazeCanvas.width || y>mazeCanvas.height) {
+        resetMaze("Wróć na start 🙂");
+        return;
+      }
+
+      // dotknięcie ściany
+      if (hitWall(x,y)) {
+        cursor.x = startPoint.x;
+        cursor.y = startPoint.y;
+        started = false;
+        mazeHint.textContent = "Au! Dotknąłeś ściany 😄 Spróbuj jeszcze";
+        drawMaze();
+        return;
+      }
+
+      cursor.x = x; cursor.y = y;
+
+      // sukces -> przejście do pytania
+      if (reachedGoal(x,y)) {
+        mazeHint.textContent = "Sukces! 💘";
+        started = false;
+        drawMaze();
+        setTimeout(() => {
+          showStep(3);
+        }, 350);
+        return;
+      }
+
+      drawMaze();
+    }
+
+    startBtn.addEventListener("click", () => {
+      started = true;
+      mazeHint.textContent = "Jedź do zdjęcia!";
+      cursor.x = startPoint.x;
+      cursor.y = startPoint.y;
+      drawMaze();
+    });
+
+    resetBtn.addEventListener("click", () => resetMaze("Kliknij Start 🙂"));
+
+    mazeCanvas.addEventListener("mousemove", onMove);
+    mazeCanvas.addEventListener("touchmove", (e) => { e.preventDefault(); onMove(e); }, {passive:false});
+
+    goalImg.onload = drawMaze;
+    drawMaze();
+
     // start: tylko 1 widok
     showStep(1);
   </script>
@@ -399,5 +631,6 @@
   <script async src="https://tenor.com/embed.js"></script>
 </body>
 </html>
+
 
 
