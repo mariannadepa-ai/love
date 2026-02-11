@@ -152,7 +152,7 @@
       margin:0 0 12px;
     }
     #maze{
-      width:min(420px, 92vw);  /* szerszy labirynt */
+      width:min(420px, 92vw);
       height:auto;
       border-radius:14px;
       border:1px solid rgba(0,0,0,.12);
@@ -450,57 +450,80 @@
     }
 
     // =====================================================================
-    // ====== LABIRYNT (generowany, szerokie korytarze + trudniejsza trasa) ==
+    // ====== LABIRYNT STAŁY (zawsze przechodzalny, szerokie korytarze) ======
     // =====================================================================
     const mazeCanvas = document.getElementById("maze");
     const ctx = mazeCanvas.getContext("2d");
     const mazeHint = document.getElementById("mazeHint");
     const mazeResetBtn = document.getElementById("mazeReset");
 
-    let armed = false;
-    let started = false;
-
-    // USTAWIENIA “SZEROKO, ALE TRUDNIEJ”
     const MAZE_SIZE = 420;
     mazeCanvas.width = MAZE_SIZE;
     mazeCanvas.height = MAZE_SIZE;
 
-    const COLS = 15;     // większe = bardziej skomplikowane
-    const ROWS = 13;
-    const CELL = 30;     // większe = szersze korytarze
-    const WALL = 6;      // mniejsze = łatwiej (większe = trudniej)
-    const MARGIN = 14;
+    let started = false;
 
-    const cursorR = 6;
-    const cursor = { x: 0, y: 0 };
+    // ✅ ZMIANY zgodnie z Twoją prośbą:
+    const WALL = 8;          // było 10
+    const BORDER = 14;
+    const cursorR = 6;       // było 7
 
-    const startPoint = { x: MARGIN + WALL + 10, y: MARGIN + WALL + 10 };
-    const goal = { x: MAZE_SIZE - (MARGIN + WALL + 28), y: MAZE_SIZE - (MARGIN + WALL + 28), r: 26 };
+    const startPoint = { x: BORDER + 18, y: BORDER + 18, r: 14 };
+    const goal = { x: MAZE_SIZE - (BORDER + 40), y: MAZE_SIZE - (BORDER + 40), r: 26 };
 
-    // cel: img/1.png
+    const cursor = { x: startPoint.x, y: startPoint.y };
+
     const goalImg = new Image();
     goalImg.src = "img/1.png";
 
-    // offscreen do kolizji
     const hitCanvas = document.createElement("canvas");
     hitCanvas.width = MAZE_SIZE;
     hitCanvas.height = MAZE_SIZE;
     const hitCtx = hitCanvas.getContext("2d");
 
-    // stały seed (labirynt zawsze taki sam)
-    let SEED = 123456;
-    function rand() {
-      SEED ^= SEED << 13; SEED ^= SEED >> 17; SEED ^= SEED << 5;
-      return ((SEED >>> 0) / 4294967296);
-    }
+    const walls = [
+      [BORDER, BORDER, MAZE_SIZE-2*BORDER, WALL],
+      [BORDER, MAZE_SIZE-BORDER-WALL, MAZE_SIZE-2*BORDER, WALL],
+      [BORDER, BORDER, WALL, MAZE_SIZE-2*BORDER],
+      [MAZE_SIZE-BORDER-WALL, BORDER, WALL, MAZE_SIZE-2*BORDER],
+
+      [70,  34,  10, 120],
+      [120, 34, 210, 10],
+      [180, 44,  10, 120],
+      [250, 84,  10, 120],
+      [310, 34,  10, 140],
+
+      [60,  140, 220, 10],
+      [100, 150, 10, 120],
+      [140, 190, 190, 10],
+      [230, 150, 10, 140],
+      [300, 170, 10, 150],
+
+      [60,  270, 240, 10],
+      [90,  280, 10, 110],
+      [140, 320, 160, 10],
+      [210, 280, 10, 100],
+      [310, 310, 10, 90],
+
+      [350, 120, 10, 170],
+      [340, 220, 60, 10],
+
+      [40,  330, 80, 10],
+      [40,  330, 10, 70],
+      [120, 330, 10, 70],
+
+      [160, 110, 90, 10],
+      [160, 110, 10, 60],
+      [200, 230, 90, 10],
+      [200, 230, 10, 60],
+    ];
 
     function resetMaze(msg){
-      armed = false;
       started = false;
       cursor.x = startPoint.x;
       cursor.y = startPoint.y;
       mazeHint.textContent = msg || "";
-      generateAndRenderMaze();
+      renderMaze();
     }
 
     function canvasPosFromEvent(ev){
@@ -512,101 +535,12 @@
       return { x:(clientX-rect.left)*scaleX, y:(clientY-rect.top)*scaleY };
     }
 
-    function generateMazeGrid(cols, rows){
-      const grid = Array.from({length: rows}, () =>
-        Array.from({length: cols}, () => ({
-          v:false, t:true, r:true, b:true, l:true
-        }))
-      );
-
-      function neighbors(x,y){
-        const n = [];
-        if (y>0) n.push([x,y-1,"t","b"]);
-        if (x<cols-1) n.push([x+1,y,"r","l"]);
-        if (y<rows-1) n.push([x,y+1,"b","t"]);
-        if (x>0) n.push([x-1,y,"l","r"]);
-        return n;
-      }
-
-      const stack = [];
-      let cx=0, cy=0;
-      grid[cy][cx].v = true;
-      stack.push([cx,cy]);
-
-      while(stack.length){
-        const [x,y] = stack[stack.length-1];
-        const opts = neighbors(x,y).filter(([nx,ny]) => !grid[ny][nx].v);
-        if(!opts.length){ stack.pop(); continue; }
-
-        const [nx,ny, wallHere, wallThere] = opts[Math.floor(rand()*opts.length)];
-        grid[y][x][wallHere] = false;
-        grid[ny][nx][wallThere] = false;
-        grid[ny][nx].v = true;
-        stack.push([nx,ny]);
-      }
-
-      return grid;
-    }
-
-    function cellToPx(x,y){
-      const px = MARGIN + x*(CELL+WALL);
-      const py = MARGIN + y*(CELL+WALL);
-      return {px,py};
-    }
-
-    function generateAndRenderMaze(){
-      ctx.clearRect(0,0,MAZE_SIZE,MAZE_SIZE);
-      hitCtx.clearRect(0,0,MAZE_SIZE,MAZE_SIZE);
-
-      // tło
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0,0,MAZE_SIZE,MAZE_SIZE);
-
-      // ściany do kolizji (czarne)
-      hitCtx.fillStyle = "#000";
-
-      // za każdym resetem generujemy ten sam układ (stały seed),
-      // jeśli chcesz losowy: ustaw SEED = Date.now() w resetMaze()
-      SEED = 123456;
-
-      const grid = generateMazeGrid(COLS, ROWS);
-
-      // ramka
-      hitCtx.fillRect(MARGIN, MARGIN, MAZE_SIZE-2*MARGIN, WALL);
-      hitCtx.fillRect(MARGIN, MAZE_SIZE-MARGIN-WALL, MAZE_SIZE-2*MARGIN, WALL);
-      hitCtx.fillRect(MARGIN, MARGIN, WALL, MAZE_SIZE-2*MARGIN);
-      hitCtx.fillRect(MAZE_SIZE-MARGIN-WALL, MARGIN, WALL, MAZE_SIZE-2*MARGIN);
-
-      for(let y=0;y<ROWS;y++){
-        for(let x=0;x<COLS;x++){
-          const c = grid[y][x];
-          const {px,py} = cellToPx(x,y);
-
-          if(c.t) hitCtx.fillRect(px, py, CELL+2*WALL, WALL);
-          if(c.l) hitCtx.fillRect(px, py, WALL, CELL+2*WALL);
-          if(c.r) hitCtx.fillRect(px+CELL+WALL, py, WALL, CELL+2*WALL);
-          if(c.b) hitCtx.fillRect(px, py+CELL+WALL, CELL+2*WALL, WALL);
-        }
-      }
-
-      // narysuj ściany identycznie na main
-      ctx.drawImage(hitCanvas, 0, 0);
-
-      // START
-      ctx.fillStyle = "#2f74ff";
-      ctx.beginPath();
-      ctx.arc(startPoint.x, startPoint.y, 12, 0, Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,.95)";
-      ctx.font = "bold 10px Arial";
-      ctx.fillText("START", startPoint.x + 14, startPoint.y + 4);
-
-      // CEL: zdjęcie 1
+    function drawGoal(){
       ctx.save();
       ctx.beginPath();
       ctx.arc(goal.x, goal.y, goal.r, 0, Math.PI*2);
       ctx.clip();
-      if(goalImg.complete){
+      if (goalImg.complete) {
         ctx.drawImage(goalImg, goal.x-goal.r, goal.y-goal.r, goal.r*2, goal.r*2);
       } else {
         ctx.fillStyle = "#ffd1dc";
@@ -619,15 +553,38 @@
       ctx.beginPath();
       ctx.arc(goal.x, goal.y, goal.r, 0, Math.PI*2);
       ctx.stroke();
+    }
 
-      // kursor
+    function renderMaze(){
+      ctx.clearRect(0,0,MAZE_SIZE,MAZE_SIZE);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0,0,MAZE_SIZE,MAZE_SIZE);
+
+      hitCtx.clearRect(0,0,MAZE_SIZE,MAZE_SIZE);
+      hitCtx.fillStyle = "#000";
+
+      ctx.fillStyle = "#000";
+      for(const [x,y,w,h] of walls){
+        ctx.fillRect(x,y,w,h);
+        hitCtx.fillRect(x,y,w,h);
+      }
+
+      ctx.fillStyle = "#2f74ff";
+      ctx.beginPath();
+      ctx.arc(startPoint.x, startPoint.y, startPoint.r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.95)";
+      ctx.font = "bold 10px Arial";
+      ctx.fillText("START", startPoint.x + 18, startPoint.y + 4);
+
+      drawGoal();
+
       ctx.fillStyle = "#ff3b6b";
       ctx.beginPath();
       ctx.arc(cursor.x, cursor.y, cursorR, 0, Math.PI*2);
       ctx.fill();
 
-      // podpowiedź
-      if(!armed){
+      if(!started){
         ctx.fillStyle = "rgba(0,0,0,.55)";
         ctx.font = "14px Arial";
         ctx.fillText("Kliknij START, potem jedź do zdjęcia", 78, 26);
@@ -638,19 +595,19 @@
       const px = Math.max(0, Math.min(MAZE_SIZE-1, Math.floor(x)));
       const py = Math.max(0, Math.min(MAZE_SIZE-1, Math.floor(y)));
       const d = hitCtx.getImageData(px, py, 1, 1).data;
-      return d[3] > 0; // alpha > 0 => ściana
+      return d[3] > 0;
     }
 
     function hitWall(x,y){
-  const probe = Math.max(3, cursorR - 2); // sonda mniejsza niż kropka
-  const pts = [
-    [x, y],
-    [x+probe, y], [x-probe, y], [x, y+probe], [x, y-probe],
-    [x+probe*0.7, y+probe*0.7], [x-probe*0.7, y+probe*0.7],
-    [x+probe*0.7, y-probe*0.7], [x-probe*0.7, y-probe*0.7],
-  ];
-  return pts.some(([px,py]) => isWallAt(px,py));
-}
+      const probe = Math.max(3, cursorR-2);
+      const pts = [
+        [x, y],
+        [x+probe, y], [x-probe, y], [x, y+probe], [x, y-probe],
+        [x+probe*0.7, y+probe*0.7], [x-probe*0.7, y+probe*0.7],
+        [x+probe*0.7, y-probe*0.7], [x-probe*0.7, y-probe*0.7],
+      ];
+      return pts.some(([px,py]) => isWallAt(px,py));
+    }
 
     function reachedGoal(x,y){
       const dx = x - goal.x;
@@ -658,23 +615,21 @@
       return (dx*dx + dy*dy) <= (goal.r*goal.r);
     }
 
-    // klik w START uzbraja
     mazeCanvas.addEventListener("click", (ev) => {
       const {x,y} = canvasPosFromEvent(ev);
       const dx = x - startPoint.x;
       const dy = y - startPoint.y;
-      if (dx*dx + dy*dy <= (16*16)) {
-        armed = true;
+      if (dx*dx + dy*dy <= (startPoint.r+4)*(startPoint.r+4)) {
         started = true;
         cursor.x = startPoint.x;
         cursor.y = startPoint.y;
         mazeHint.textContent = "Jedź do zdjęcia!";
-        generateAndRenderMaze();
+        renderMaze();
       }
     });
 
     function onMove(ev){
-      if (!started) return;
+      if(!started) return;
 
       const {x,y} = canvasPosFromEvent(ev);
 
@@ -684,41 +639,38 @@
       }
 
       if (hitWall(x,y)) {
-        armed = false;
-        started = false;
-        cursor.x = startPoint.x;
-        cursor.y = startPoint.y;
-        mazeHint.textContent = "Au! Ściana 😄 Kliknij START i spróbuj jeszcze";
-        generateAndRenderMaze();
+        resetMaze("Au! Ściana 😄 Kliknij START i spróbuj jeszcze");
         return;
       }
 
       cursor.x = x; cursor.y = y;
 
       if (reachedGoal(x,y)) {
-        armed = false;
         started = false;
         mazeHint.textContent = "Sukces! 💘";
-        generateAndRenderMaze();
-        setTimeout(() => showStep(3), 300);
+        renderMaze();
+        setTimeout(() => showStep(3), 350);
         return;
       }
 
-      generateAndRenderMaze();
+      renderMaze();
     }
 
     mazeCanvas.addEventListener("mousemove", onMove);
     mazeCanvas.addEventListener("touchmove", (e) => { e.preventDefault(); onMove(e); }, {passive:false});
     mazeResetBtn.addEventListener("click", () => resetMaze("Kliknij START 🙂"));
-    goalImg.onload = () => generateAndRenderMaze();
+    goalImg.onload = () => renderMaze();
 
-    // start labiryntu (na wejściu do kroku 2)
     resetMaze("Kliknij START 🙂");
+
+    // start na 1 ekranie
+    showStep(1);
   </script>
 
   <script async src="https://tenor.com/embed.js"></script>
 </body>
 </html>
+
 
 
 
