@@ -17,31 +17,9 @@
       overflow:hidden;
     }
 
-    .hidden{ display:none:none !important; }
-    .hidden{ display:none !important; }
+    /* ====== KLASYCZNY LOOK (własny) ====== */
+    .hidden{ display:none; }
 
-    /* wrapper: tytuł + captcha (bez odstępu) */
-    .gateWrap{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap: 0px;
-      z-index: 2;
-    }
-    .top-title{
-      width:min(560px, 92vw);
-      text-align:center;
-      font-weight:900;
-      font-size:clamp(22px, 4.5vw, 34px);
-      letter-spacing:.3px;
-      margin: 0;
-      padding: 0;
-      line-height: 1.05;
-      color:#111;
-      text-shadow: 0 10px 30px rgba(0,0,0,.12);
-    }
-
-    /* ====== CAPTCHA ====== */
     .captcha{
       width: min(360px, 94vw);
       background:#fff;
@@ -52,12 +30,33 @@
       font-family: Arial, system-ui, sans-serif;
       position:relative;
       z-index: 2;
-      margin-top: 0;
     }
-    .captcha-header{ background:#2f74ff; color:#fff; padding:12px 12px; text-align:left; }
-    .captcha-title{ font-size:12px; opacity:.95; letter-spacing:.2px; }
-    .captcha-subtitle{ font-size:18px; font-weight:700; margin-top:2px; line-height:1.1; }
-    .captcha-body{ padding:10px; background:#f6f6f6; }
+
+    .captcha-header{
+      background:#2f74ff;
+      color:#fff;
+      padding:12px 12px;
+      text-align:left;
+    }
+
+    .captcha-title{
+      font-size:12px;
+      opacity:.95;
+      letter-spacing:.2px;
+    }
+
+    .captcha-subtitle{
+      font-size:18px;
+      font-weight:700;
+      margin-top:2px;
+      line-height:1.1;
+    }
+
+    .captcha-body{
+      padding:10px;
+      background:#f6f6f6;
+    }
+
     .captcha-grid{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -66,6 +65,7 @@
       padding:2px;
       border-radius:6px;
     }
+
     .cap-tile{
       position:relative;
       background:#fff;
@@ -75,6 +75,7 @@
       border-radius:4px;
       user-select:none;
     }
+
     .cap-tile img{
       width:100%;
       height:100%;
@@ -83,6 +84,7 @@
       user-select:none;
       pointer-events:none;
     }
+
     .cap-tile.selected::after{
       content:"";
       position:absolute;
@@ -90,6 +92,7 @@
       border:4px solid #2f74ff;
       box-shadow: inset 0 0 0 2px rgba(255,255,255,.7);
     }
+
     .cap-tile.selected::before{
       content:"✓";
       position:absolute;
@@ -107,6 +110,7 @@
       box-shadow: 0 6px 14px rgba(0,0,0,.18);
       z-index: 2;
     }
+
     .captcha-footer{
       display:flex;
       align-items:center;
@@ -116,8 +120,18 @@
       border-top:1px solid #e6e6e6;
       background:#fff;
     }
-    .captcha-status{ font-size:12px; color:#555; min-height:16px; }
-    .captcha-actions{ display:flex; gap:8px; }
+
+    .captcha-status{
+      font-size:12px;
+      color:#555;
+      min-height:16px;
+    }
+
+    .captcha-actions{
+      display:flex;
+      gap:8px;
+    }
+
     .cap-btn{
       border:1px solid #d7d7d7;
       background:#fff;
@@ -127,56 +141,18 @@
       font-weight:700;
       font-size:13px;
     }
-    .cap-btn.primary{ background:#2f74ff; color:#fff; border-color:#2f74ff; }
-    .cap-btn.ghost{ width:38px; }
 
-    /* ====== LABIRYNT ====== */
-    .mazeWrap{
-      width:min(560px, 92vw);
-      background: rgba(255,255,255,.9);
-      border:1px solid rgba(255,255,255,.65);
-      border-radius:24px;
-      padding:18px 16px;
-      box-shadow: 0 18px 60px rgba(0,0,0,.18);
-      text-align:center;
-      backdrop-filter: blur(10px);
-      z-index:2;
-    }
-    .mazeTitle{
-      font-weight:900;
-      font-size:clamp(18px, 3.5vw, 22px);
-      margin:0 0 4px;
-    }
-    .mazeSub{
-      font-size:13px;
-      opacity:.85;
-      margin:0 0 12px;
-    }
-    #maze{
-      width:min(520px, 92vw);
-      height:auto;
-      border-radius:14px;
-      border:1px solid rgba(0,0,0,.12);
-      box-shadow: 0 12px 30px rgba(0,0,0,.12);
-      background:#fff;
-      display:block;
-      margin: 0 auto;
-      touch-action: none;
-    }
-    .mazeBtns{
-      display:flex;
-      gap:10px;
-      justify-content:center;
-      margin-top:12px;
-    }
-    .mazeHint{
-      font-size:12px;
-      color:#555;
-      min-height:16px;
-      margin-top:8px;
+    .cap-btn.primary{
+      background:#2f74ff;
+      color:#fff;
+      border-color:#2f74ff;
     }
 
-    /* ====== KARTA ====== */
+    .cap-btn.ghost{
+      width:38px;
+    }
+
+    /* ====== TWOJA KARTA ====== */
     .card{
       width:min(560px, 92vw);
       background: rgba(255,255,255,.75);
@@ -219,7 +195,7 @@
       to{ transform: translateY(-140vh) rotate(360deg); opacity:0;}
     }
 
-    /* ====== ATAK MIŁOŚCI ====== */
+    /* ====== EKRAN ATAKU MIŁOŚCI ====== */
     .attack{
       width:min(560px, 92vw);
       background: rgba(255,255,255,.9);
@@ -243,45 +219,28 @@
 
 <body>
 
-  <!-- 1 widok -->
-  <div class="gateWrap" id="gateWrap">
-    <div class="top-title">Potwierdź, że jesteś moim mężem</div>
+  <!-- ====== WERYFIKACJA (klasyczny wygląd) ====== -->
+  <div class="captcha" id="gate" role="dialog" aria-label="Weryfikacja obrazkowa">
+    <div class="captcha-header">
+      <div class="captcha-title">Wybierz wszystkie obrazy z</div>
+      <div class="captcha-subtitle">Twoją Walentynką</div>
+    </div>
 
-    <div class="captcha" id="gate" role="dialog" aria-label="Weryfikacja obrazkowa">
-      <div class="captcha-header">
-        <div class="captcha-title">Wybierz wszystkie obrazy z</div>
-        <div class="captcha-subtitle">Twoją Walentynką</div>
-      </div>
+    <div class="captcha-body">
+      <div class="captcha-grid" id="grid"></div>
+    </div>
 
-      <div class="captcha-body">
-        <div class="captcha-grid" id="grid"></div>
-      </div>
+    <div class="captcha-footer">
+      <div class="captcha-status" id="hint"></div>
 
-      <div class="captcha-footer">
-        <div class="captcha-status" id="hint"></div>
-
-        <div class="captcha-actions">
-          <button class="cap-btn ghost" id="resetBtn" title="Wyczyść zaznaczenie">↻</button>
-          <button class="cap-btn primary" id="checkBtn">Sprawdź</button>
-        </div>
+      <div class="captcha-actions">
+        <button class="cap-btn ghost" id="resetBtn" title="Wyczyść zaznaczenie">↻</button>
+        <button class="cap-btn primary" id="checkBtn">Sprawdź</button>
       </div>
     </div>
   </div>
 
-  <!-- 2 widok: LABIRYNT -->
-  <div class="mazeWrap hidden" id="mazeGate" role="dialog" aria-label="Labirynt weryfikacyjny">
-    <div class="mazeTitle">Etap 2: przejdź labiryntem do mnie 😄</div>
-    <div class="mazeSub">Kliknij <b>niebieską kropkę START</b>, a potem dojedź myszką do zdjęcia. Nie dotykaj ścian.</div>
-
-    <canvas id="maze" width="520" height="380"></canvas>
-
-    <div class="mazeBtns">
-      <button class="cap-btn ghost" id="mazeReset" title="Reset">↻</button>
-    </div>
-    <div class="mazeHint" id="mazeHint"></div>
-  </div>
-
-  <!-- 3 widok: pytanie -->
+  <!-- ====== TWOJA KARTA (ukryta do czasu przejścia weryfikacji) ====== -->
   <div class="card hidden" id="card">
     <h1>Misiu Pysiu<span id="name">, Mój Królisiu</span> 💘</h1>
     <p style="font-size:20px; font-weight:700;">Zostaniesz moją Walentynką? (wybierz dobrze)</p>
@@ -292,7 +251,7 @@
     </div>
   </div>
 
-  <!-- 4 widok: atak miłości -->
+  <!-- ====== ATAK MIŁOŚCI (ukryty do czasu kliknięcia TAK) ====== -->
   <div class="attack hidden" id="loveAttack">
     <div class="attack-title">ATAK MIŁOŚCI!!!</div>
 
@@ -307,30 +266,8 @@
   </div>
 
   <script>
-    // ====== WIDOKI: zawsze tylko jeden ======
-    function showStep(step){
-      const gateWrap = document.getElementById("gateWrap");
-      const mazeGate = document.getElementById("mazeGate");
-      const card = document.getElementById("card");
-      const loveAttack = document.getElementById("loveAttack");
-
-      gateWrap.classList.add("hidden");
-      mazeGate.classList.add("hidden");
-      card.classList.add("hidden");
-      loveAttack.classList.add("hidden");
-
-      if (step === 1) gateWrap.classList.remove("hidden");
-      if (step === 2) mazeGate.classList.remove("hidden");
-      if (step === 3) card.classList.remove("hidden");
-      if (step === 4) loveAttack.classList.remove("hidden");
-    }
-
-    function resetCaptchaUI(){
-      document.querySelectorAll(".cap-tile.selected").forEach(t => t.classList.remove("selected"));
-      document.getElementById("hint").textContent = "";
-    }
-
-    // ====== CAPTCHA USTAWIENIA ======
+    // ====== USTAWIENIA WERYFIKACJI ======
+    // USTAW correct:true tylko dla tych obrazów, które mają być "walentynką"
     const images = [
       { src: "img/1.png", correct: true },
       { src: "img/2.png", correct: true },
@@ -346,6 +283,7 @@
     const grid = document.getElementById("grid");
     const hint = document.getElementById("hint");
 
+    // Render kafelków 3x3
     for (let i = 0; i < 9; i++) {
       const tile = document.createElement("div");
       tile.className = "cap-tile";
@@ -374,28 +312,32 @@
         .sort((a,b)=>a-b);
     }
 
-    document.getElementById("resetBtn").addEventListener("click", resetCaptchaUI);
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.querySelectorAll(".cap-tile.selected").forEach(t => t.classList.remove("selected"));
+      hint.textContent = "";
+    });
 
     document.getElementById("checkBtn").addEventListener("click", () => {
       const sel = getSelectedIdx();
       const cor = getCorrectIdx();
+
       const ok = sel.length === cor.length && sel.every((v,i)=>v===cor[i]);
 
       if (ok) {
-        resetCaptchaUI();
-        showStep(2);
-        resetMaze("Kliknij START 🙂");
+        hint.textContent = "Super! 💘";
+        document.getElementById("gate").classList.add("hidden");
+        document.getElementById("card").classList.remove("hidden");
       } else {
-        hint.textContent = "CO?!!! Wybieraj jeszcze raz!";
+        hint.textContent = "Nie tym razem 😄 Spróbuj jeszcze!";
       }
     });
 
-    // ====== IMIĘ Z URL ======
+    // ====== IMIĘ Z PARAMETRU URL ======
     const params = new URLSearchParams(location.search);
     const imie = params.get("imie");
     if (imie) document.getElementById("name").textContent = imie;
 
-    // ====== SERDUSZKA ======
+    // ====== SERDUSZKA W TLE ======
     const hearts = ["💖","💘","💕","❤️","💗"];
     for (let i=0;i<18;i++){
       const s = document.createElement("div");
@@ -408,13 +350,17 @@
       document.body.appendChild(s);
     }
 
-    // ====== TAK -> ATAK MIŁOŚCI ======
+    // ====== KLIK "TAK" => ATAK MIŁOŚCI ======
     document.getElementById("yesBtn").onclick = () => {
-      showStep(4);
+      // ukryj kartę i pokaż tylko ekran ataku
+      document.getElementById("card").classList.add("hidden");
+      document.getElementById("loveAttack").classList.remove("hidden");
+
+      // opcjonalnie: confetti
       confetti();
     };
 
-    // ====== NIE UCIEKA ======
+    // ====== "NIE" UCIEKA ======
     const noBtn = document.getElementById("noBtn");
     noBtn.onmouseover = () => {
       const card = document.getElementById("card").getBoundingClientRect();
@@ -449,237 +395,14 @@
         setTimeout(()=>{clearInterval(t); p.remove();}, 1200+Math.random()*600);
       }
     }
-
-    // =====================================================================
-    // ====== LABIRYNT "JAK NA OBRAZKU" (prosty, cienkie linie, przechodzalny)
-    // =====================================================================
-    const mazeCanvas = document.getElementById("maze");
-    const ctx = mazeCanvas.getContext("2d");
-    const mazeHint = document.getElementById("mazeHint");
-    const mazeResetBtn = document.getElementById("mazeReset");
-
-    const W = mazeCanvas.width;   // 520
-    const H = mazeCanvas.height;  // 380
-
-    let started = false;
-
-    // cienkie ściany + mała kropka
-    const WALL = 6;
-    const BORDER = 16;
-    const cursorR = 6;
-
-    const startPoint = { x: BORDER + 22, y: BORDER + 22, r: 15 };
-    const goal = { x: W - (BORDER + 46), y: H - (BORDER + 46), r: 26 };
-    const cursor = { x: startPoint.x, y: startPoint.y };
-
-    // cel = img/1.png
-    const goalImg = new Image();
-    goalImg.src = "img/1.png";
-
-    // offscreen do kolizji
-    const hitCanvas = document.createElement("canvas");
-    hitCanvas.width = W;
-    hitCanvas.height = H;
-    const hitCtx = hitCanvas.getContext("2d");
-
-    // Ściany w stylu obrazka: długie segmenty i duże prześwity.
-    // Format: [x, y, w, h]
-    const walls = [
-      // rama
-      [BORDER, BORDER, W-2*BORDER, WALL],
-      [BORDER, H-BORDER-WALL, W-2*BORDER, WALL],
-      [BORDER, BORDER, WALL, H-2*BORDER],
-      [W-BORDER-WALL, BORDER, WALL, H-2*BORDER],
-
-      // piony / poziomy (układ prosty i przechodzalny)
-      [110, 40, WALL, 260],
-      [180, 80, WALL, 230],
-      [260, 40, WALL, 260],
-      [340, 90, WALL, 200],
-      [420, 50, WALL, 250],
-
-      [60, 110, 160, WALL],
-      [220, 110, 170, WALL],
-      [120, 190, 180, WALL],
-      [300, 190, 160, WALL],
-      [70, 270, 200, WALL],
-      [270, 270, 180, WALL],
-
-      // krótkie "zęby" jak w obrazku (ale bez blokowania przejść)
-      [60, 40, 120, WALL],
-      [220, 40, 230, WALL],
-
-      [140, 140, 60, WALL],
-      [320, 140, 60, WALL],
-      [210, 220, 70, WALL],
-      [370, 220, 50, WALL],
-
-      // mały "tunel" przy dole-lewej (dekoracja)
-      [70, 310, 90, WALL],
-      [70, 310, WALL, 40],
-      [160, 310, WALL, 40],
-
-      // prawy-dolny narożnik: zostawiamy otwarty do celu
-      [W-(BORDER+130), H-(BORDER+120), 90, WALL],   // poziom nad celem
-      [W-(BORDER+130), H-(BORDER+120), WALL, 70],   // pion obok celu
-    ];
-
-    function resetMaze(msg){
-      started = false;
-      cursor.x = startPoint.x;
-      cursor.y = startPoint.y;
-      mazeHint.textContent = msg || "";
-      renderMaze();
-    }
-
-    function canvasPosFromEvent(ev){
-      const rect = mazeCanvas.getBoundingClientRect();
-      const scaleX = mazeCanvas.width / rect.width;
-      const scaleY = mazeCanvas.height / rect.height;
-      const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-      const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
-      return { x:(clientX-rect.left)*scaleX, y:(clientY-rect.top)*scaleY };
-    }
-
-    function drawGoal(){
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(goal.x, goal.y, goal.r, 0, Math.PI*2);
-      ctx.clip();
-      if (goalImg.complete) {
-        ctx.drawImage(goalImg, goal.x-goal.r, goal.y-goal.r, goal.r*2, goal.r*2);
-      } else {
-        ctx.fillStyle = "#ffd1dc";
-        ctx.fill();
-      }
-      ctx.restore();
-
-      ctx.strokeStyle = "#ff3b6b";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(goal.x, goal.y, goal.r, 0, Math.PI*2);
-      ctx.stroke();
-    }
-
-    function renderMaze(){
-      ctx.clearRect(0,0,W,H);
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0,0,W,H);
-
-      hitCtx.clearRect(0,0,W,H);
-      hitCtx.fillStyle = "#000";
-
-      ctx.fillStyle = "#000";
-      for(const [x,y,w,h] of walls){
-        ctx.fillRect(x,y,w,h);
-        hitCtx.fillRect(x,y,w,h);
-      }
-
-      // START
-      ctx.fillStyle = "#2f74ff";
-      ctx.beginPath();
-      ctx.arc(startPoint.x, startPoint.y, startPoint.r, 0, Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,.95)";
-      ctx.font = "bold 11px Arial";
-      ctx.fillText("START", startPoint.x + 18, startPoint.y + 4);
-
-      // CEL
-      drawGoal();
-
-      // kursor
-      ctx.fillStyle = "#ff3b6b";
-      ctx.beginPath();
-      ctx.arc(cursor.x, cursor.y, cursorR, 0, Math.PI*2);
-      ctx.fill();
-
-      if(!started){
-        ctx.fillStyle = "rgba(0,0,0,.55)";
-        ctx.font = "14px Arial";
-        ctx.fillText("Kliknij START, potem jedź do zdjęcia", 120, 26);
-      }
-    }
-
-    function isWallAt(x,y){
-      const px = Math.max(0, Math.min(W-1, Math.floor(x)));
-      const py = Math.max(0, Math.min(H-1, Math.floor(y)));
-      const d = hitCtx.getImageData(px, py, 1, 1).data;
-      return d[3] > 0;
-    }
-
-    function hitWall(x,y){
-      const probe = Math.max(3, cursorR-2);
-      const pts = [
-        [x, y],
-        [x+probe, y], [x-probe, y], [x, y+probe], [x, y-probe],
-        [x+probe*0.7, y+probe*0.7], [x-probe*0.7, y+probe*0.7],
-        [x+probe*0.7, y-probe*0.7], [x-probe*0.7, y-probe*0.7],
-      ];
-      return pts.some(([px,py]) => isWallAt(px,py));
-    }
-
-    function reachedGoal(x,y){
-      const dx = x - goal.x;
-      const dy = y - goal.y;
-      return (dx*dx + dy*dy) <= (goal.r*goal.r);
-    }
-
-    // START po kliknięciu kropki
-    mazeCanvas.addEventListener("click", (ev) => {
-      const {x,y} = canvasPosFromEvent(ev);
-      const dx = x - startPoint.x;
-      const dy = y - startPoint.y;
-      if (dx*dx + dy*dy <= (startPoint.r+5)*(startPoint.r+5)) {
-        started = true;
-        cursor.x = startPoint.x;
-        cursor.y = startPoint.y;
-        mazeHint.textContent = "Jedź do zdjęcia!";
-        renderMaze();
-      }
-    });
-
-    function onMove(ev){
-      if(!started) return;
-
-      const {x,y} = canvasPosFromEvent(ev);
-
-      if (x<0 || y<0 || x>W || y>H) {
-        resetMaze("Wróć na start 🙂");
-        return;
-      }
-
-      if (hitWall(x,y)) {
-        resetMaze("Au! Ściana 😄 Kliknij START i spróbuj jeszcze");
-        return;
-      }
-
-      cursor.x = x; cursor.y = y;
-
-      if (reachedGoal(x,y)) {
-        started = false;
-        mazeHint.textContent = "Sukces! 💘";
-        renderMaze();
-        setTimeout(() => showStep(3), 350);
-        return;
-      }
-
-      renderMaze();
-    }
-
-    mazeCanvas.addEventListener("mousemove", onMove);
-    mazeCanvas.addEventListener("touchmove", (e) => { e.preventDefault(); onMove(e); }, {passive:false});
-    mazeResetBtn.addEventListener("click", () => resetMaze("Kliknij START 🙂"));
-    goalImg.onload = () => renderMaze();
-
-    resetMaze("Kliknij START 🙂");
-
-    // start na 1 ekranie
-    showStep(1);
   </script>
 
+  <!-- Tenor embed: tylko raz, na końcu -->
   <script async src="https://tenor.com/embed.js"></script>
+
 </body>
 </html>
+
 
 
 
