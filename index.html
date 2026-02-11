@@ -33,7 +33,7 @@
       font-weight:900;
       font-size:clamp(22px, 4.5vw, 34px);
       letter-spacing:.3px;
-      margin: 0 0 4px;
+      margin: 0;
       padding: 0;
       line-height: 1.05;
       color:#111;
@@ -160,6 +160,7 @@
       background:#fff;
       display:block;
       margin: 0 auto;
+      touch-action: none;
     }
     .mazeBtns{
       display:flex;
@@ -269,13 +270,12 @@
   <!-- 2 widok: LABIRYNT -->
   <div class="mazeWrap hidden" id="mazeGate" role="dialog" aria-label="Labirynt weryfikacyjny">
     <div class="mazeTitle">Etap 2: przejdź labiryntem do mnie 😄</div>
-    <div class="mazeSub">Kliknij <b>Start</b>, potem dojedź myszką do zdjęcia. Nie dotykaj ścian.</div>
+    <div class="mazeSub">Kliknij <b>niebieską kropkę START</b>, a potem dojedź myszką do zdjęcia. Nie dotykaj ścian.</div>
 
     <canvas id="maze" width="360" height="360"></canvas>
 
     <div class="mazeBtns">
       <button class="cap-btn ghost" id="mazeReset" title="Reset">↻</button>
-      <button class="cap-btn primary" id="mazeStart">Start</button>
     </div>
     <div class="mazeHint" id="mazeHint"></div>
   </div>
@@ -382,8 +382,8 @@
 
       if (ok) {
         resetCaptchaUI();
-        showStep(2); // -> labirynt
-        resetMaze("Kliknij Start 🙂");
+        showStep(2);
+        resetMaze("Kliknij niebieską kropkę START 🙂");
       } else {
         hint.textContent = "CO?!!! Wybieraj jeszcze raz!";
       }
@@ -449,33 +449,27 @@
       }
     }
 
-    // ====== LABIRYNT LOGIKA ======
+    // ====== LABIRYNT ======
     const mazeCanvas = document.getElementById("maze");
     const ctx = mazeCanvas.getContext("2d");
     const mazeHint = document.getElementById("mazeHint");
-    const startBtn = document.getElementById("mazeStart");
-    const resetBtn = document.getElementById("mazeReset");
+    const mazeResetBtn = document.getElementById("mazeReset");
 
-    let started = false;
+    let armed = false;   // kliknięto start
+    let started = false; // ruch jest aktywny (po kliknięciu startu)
 
-    // start i cel
     const startPoint = { x: 26, y: 26 };
     const cursor = { x: startPoint.x, y: startPoint.y };
     const cursorR = 6;
 
-    // użyj zdjęcia numer 1
-    const goalImgSrc = "img/1.png";
+    // cel: img/1.png
     const goalImg = new Image();
-    goalImg.src = goalImgSrc;
-
+    goalImg.src = "img/1.png";
     const goal = { x: 308, y: 308, r: 26 };
 
-    // ściany labiryntu (prostokąty)
+    // ściany
     const walls = [
-      // ramka
       {x:10,y:10,w:340,h:10},{x:10,y:340,w:340,h:10},{x:10,y:10,w:10,h:340},{x:340,y:10,w:10,h:340},
-
-      // wewnętrzne
       {x:40,y:40,w:280,h:10},
       {x:40,y:40,w:10,h:220},
       {x:70,y:80,w:220,h:10},
@@ -491,7 +485,6 @@
     function drawMaze(){
       ctx.clearRect(0,0,mazeCanvas.width, mazeCanvas.height);
 
-      // tło
       ctx.fillStyle = "#fff";
       ctx.fillRect(0,0,mazeCanvas.width, mazeCanvas.height);
 
@@ -499,13 +492,17 @@
       ctx.fillStyle = "#222";
       walls.forEach(w => ctx.fillRect(w.x, w.y, w.w, w.h));
 
-      // start
+      // START (klikalny)
       ctx.fillStyle = "#2f74ff";
       ctx.beginPath();
-      ctx.arc(startPoint.x, startPoint.y, 10, 0, Math.PI*2);
+      ctx.arc(startPoint.x, startPoint.y, 11, 0, Math.PI*2);
       ctx.fill();
 
-      // cel (zdjęcie w kółku)
+      ctx.fillStyle = "rgba(255,255,255,.95)";
+      ctx.font = "bold 10px Arial";
+      ctx.fillText("START", 38, 30);
+
+      // cel
       ctx.save();
       ctx.beginPath();
       ctx.arc(goal.x, goal.y, goal.r, 0, Math.PI*2);
@@ -530,15 +527,20 @@
       ctx.arc(cursor.x, cursor.y, cursorR, 0, Math.PI*2);
       ctx.fill();
 
-      // overlay info
-      if (!started) {
+      // podpowiedź na płótnie
+      if (!armed) {
         ctx.fillStyle = "rgba(0,0,0,.55)";
         ctx.font = "14px Arial";
-        ctx.fillText("Kliknij Start i jedź do zdjęcia", 78, 24);
+        ctx.fillText("Kliknij niebieską kropkę START", 70, 24);
+      } else if (!started) {
+        ctx.fillStyle = "rgba(0,0,0,.55)";
+        ctx.font = "14px Arial";
+        ctx.fillText("Jedź do zdjęcia!", 120, 24);
       }
     }
 
     function resetMaze(msg){
+      armed = false;
       started = false;
       cursor.x = startPoint.x;
       cursor.y = startPoint.y;
@@ -572,6 +574,23 @@
       return { x:(clientX-rect.left)*scaleX, y:(clientY-rect.top)*scaleY };
     }
 
+    // kliknięcie na canvas: jeśli kliknięto w start -> uzbrój i startuj
+    mazeCanvas.addEventListener("click", (ev) => {
+      const {x,y} = canvasPosFromEvent(ev);
+      const dx = x - startPoint.x;
+      const dy = y - startPoint.y;
+      const dist2 = dx*dx + dy*dy;
+
+      if (dist2 <= (14*14)) { // klik w kropkę start
+        armed = true;
+        started = true;
+        cursor.x = startPoint.x;
+        cursor.y = startPoint.y;
+        mazeHint.textContent = "Jedź do zdjęcia!";
+        drawMaze();
+      }
+    });
+
     function onMove(ev){
       if (!started) return;
 
@@ -585,42 +604,34 @@
 
       // dotknięcie ściany
       if (hitWall(x,y)) {
+        armed = false;
+        started = false;
         cursor.x = startPoint.x;
         cursor.y = startPoint.y;
-        started = false;
-        mazeHint.textContent = "Au! Dotknąłeś ściany 😄 Spróbuj jeszcze";
+        mazeHint.textContent = "Au! Dotknąłeś ściany 😄 Kliknij START i spróbuj jeszcze";
         drawMaze();
         return;
       }
 
       cursor.x = x; cursor.y = y;
 
-      // sukces -> przejście do pytania
+      // sukces
       if (reachedGoal(x,y)) {
         mazeHint.textContent = "Sukces! 💘";
+        armed = false;
         started = false;
         drawMaze();
-        setTimeout(() => {
-          showStep(3);
-        }, 350);
+        setTimeout(() => showStep(3), 300);
         return;
       }
 
       drawMaze();
     }
 
-    startBtn.addEventListener("click", () => {
-      started = true;
-      mazeHint.textContent = "Jedź do zdjęcia!";
-      cursor.x = startPoint.x;
-      cursor.y = startPoint.y;
-      drawMaze();
-    });
-
-    resetBtn.addEventListener("click", () => resetMaze("Kliknij Start 🙂"));
-
     mazeCanvas.addEventListener("mousemove", onMove);
     mazeCanvas.addEventListener("touchmove", (e) => { e.preventDefault(); onMove(e); }, {passive:false});
+
+    mazeResetBtn.addEventListener("click", () => resetMaze("Kliknij niebieską kropkę START 🙂"));
 
     goalImg.onload = drawMaze;
     drawMaze();
@@ -632,6 +643,7 @@
   <script async src="https://tenor.com/embed.js"></script>
 </body>
 </html>
+
 
 
 
