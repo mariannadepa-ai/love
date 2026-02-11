@@ -152,7 +152,7 @@
       margin:0 0 12px;
     }
     #maze{
-      width:min(360px, 90vw);
+      width:min(420px, 92vw);  /* szerszy labirynt */
       height:auto;
       border-radius:14px;
       border:1px solid rgba(0,0,0,.12);
@@ -272,7 +272,7 @@
     <div class="mazeTitle">Etap 2: przejdź labiryntem do mnie 😄</div>
     <div class="mazeSub">Kliknij <b>niebieską kropkę START</b>, a potem dojedź myszką do zdjęcia. Nie dotykaj ścian.</div>
 
-    <canvas id="maze" width="360" height="360"></canvas>
+    <canvas id="maze" width="420" height="420"></canvas>
 
     <div class="mazeBtns">
       <button class="cap-btn ghost" id="mazeReset" title="Reset">↻</button>
@@ -383,7 +383,7 @@
       if (ok) {
         resetCaptchaUI();
         showStep(2);
-        resetMaze("Kliknij niebieską kropkę START 🙂");
+        resetMaze("Kliknij START 🙂");
       } else {
         hint.textContent = "CO?!!! Wybieraj jeszcze raz!";
       }
@@ -449,65 +449,164 @@
       }
     }
 
-    // ====== LABIRYNT ======
+    // =====================================================================
+    // ====== LABIRYNT (generowany, szerokie korytarze + trudniejsza trasa) ==
+    // =====================================================================
     const mazeCanvas = document.getElementById("maze");
     const ctx = mazeCanvas.getContext("2d");
     const mazeHint = document.getElementById("mazeHint");
     const mazeResetBtn = document.getElementById("mazeReset");
 
-    let armed = false;   // kliknięto start
-    let started = false; // ruch jest aktywny (po kliknięciu startu)
+    let armed = false;
+    let started = false;
 
-    const startPoint = { x: 26, y: 26 };
-    const cursor = { x: startPoint.x, y: startPoint.y };
-    const cursorR = 6;
+    // USTAWIENIA “SZEROKO, ALE TRUDNIEJ”
+    const MAZE_SIZE = 420;
+    mazeCanvas.width = MAZE_SIZE;
+    mazeCanvas.height = MAZE_SIZE;
+
+    const COLS = 15;     // większe = bardziej skomplikowane
+    const ROWS = 13;
+    const CELL = 24;     // większe = szersze korytarze
+    const WALL = 7;      // mniejsze = łatwiej (większe = trudniej)
+    const MARGIN = 14;
+
+    const cursorR = 7;
+    const cursor = { x: 0, y: 0 };
+
+    const startPoint = { x: MARGIN + WALL + 10, y: MARGIN + WALL + 10 };
+    const goal = { x: MAZE_SIZE - (MARGIN + WALL + 28), y: MAZE_SIZE - (MARGIN + WALL + 28), r: 26 };
 
     // cel: img/1.png
     const goalImg = new Image();
     goalImg.src = "img/1.png";
-    const goal = { x: 308, y: 308, r: 26 };
 
-    // ściany
-    const walls = [
-      {x:10,y:10,w:340,h:10},{x:10,y:340,w:340,h:10},{x:10,y:10,w:10,h:340},{x:340,y:10,w:10,h:340},
-      {x:40,y:40,w:280,h:10},
-      {x:40,y:40,w:10,h:220},
-      {x:70,y:80,w:220,h:10},
-      {x:120,y:110,w:10,h:180},
-      {x:150,y:140,w:160,h:10},
-      {x:190,y:140,w:10,h:140},
-      {x:70,y:220,w:160,h:10},
-      {x:260,y:80,w:10,h:200},
-      {x:70,y:260,w:10,h:70},
-      {x:90,y:300,w:220,h:10},
-    ];
+    // offscreen do kolizji
+    const hitCanvas = document.createElement("canvas");
+    hitCanvas.width = MAZE_SIZE;
+    hitCanvas.height = MAZE_SIZE;
+    const hitCtx = hitCanvas.getContext("2d");
 
-    function drawMaze(){
-      ctx.clearRect(0,0,mazeCanvas.width, mazeCanvas.height);
+    // stały seed (labirynt zawsze taki sam)
+    let SEED = 123456;
+    function rand() {
+      SEED ^= SEED << 13; SEED ^= SEED >> 17; SEED ^= SEED << 5;
+      return ((SEED >>> 0) / 4294967296);
+    }
 
+    function resetMaze(msg){
+      armed = false;
+      started = false;
+      cursor.x = startPoint.x;
+      cursor.y = startPoint.y;
+      mazeHint.textContent = msg || "";
+      generateAndRenderMaze();
+    }
+
+    function canvasPosFromEvent(ev){
+      const rect = mazeCanvas.getBoundingClientRect();
+      const scaleX = mazeCanvas.width / rect.width;
+      const scaleY = mazeCanvas.height / rect.height;
+      const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+      const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+      return { x:(clientX-rect.left)*scaleX, y:(clientY-rect.top)*scaleY };
+    }
+
+    function generateMazeGrid(cols, rows){
+      const grid = Array.from({length: rows}, () =>
+        Array.from({length: cols}, () => ({
+          v:false, t:true, r:true, b:true, l:true
+        }))
+      );
+
+      function neighbors(x,y){
+        const n = [];
+        if (y>0) n.push([x,y-1,"t","b"]);
+        if (x<cols-1) n.push([x+1,y,"r","l"]);
+        if (y<rows-1) n.push([x,y+1,"b","t"]);
+        if (x>0) n.push([x-1,y,"l","r"]);
+        return n;
+      }
+
+      const stack = [];
+      let cx=0, cy=0;
+      grid[cy][cx].v = true;
+      stack.push([cx,cy]);
+
+      while(stack.length){
+        const [x,y] = stack[stack.length-1];
+        const opts = neighbors(x,y).filter(([nx,ny]) => !grid[ny][nx].v);
+        if(!opts.length){ stack.pop(); continue; }
+
+        const [nx,ny, wallHere, wallThere] = opts[Math.floor(rand()*opts.length)];
+        grid[y][x][wallHere] = false;
+        grid[ny][nx][wallThere] = false;
+        grid[ny][nx].v = true;
+        stack.push([nx,ny]);
+      }
+
+      return grid;
+    }
+
+    function cellToPx(x,y){
+      const px = MARGIN + x*(CELL+WALL);
+      const py = MARGIN + y*(CELL+WALL);
+      return {px,py};
+    }
+
+    function generateAndRenderMaze(){
+      ctx.clearRect(0,0,MAZE_SIZE,MAZE_SIZE);
+      hitCtx.clearRect(0,0,MAZE_SIZE,MAZE_SIZE);
+
+      // tło
       ctx.fillStyle = "#fff";
-      ctx.fillRect(0,0,mazeCanvas.width, mazeCanvas.height);
+      ctx.fillRect(0,0,MAZE_SIZE,MAZE_SIZE);
 
-      // ściany
-      ctx.fillStyle = "#222";
-      walls.forEach(w => ctx.fillRect(w.x, w.y, w.w, w.h));
+      // ściany do kolizji (czarne)
+      hitCtx.fillStyle = "#000";
 
-      // START (klikalny)
+      // za każdym resetem generujemy ten sam układ (stały seed),
+      // jeśli chcesz losowy: ustaw SEED = Date.now() w resetMaze()
+      SEED = 123456;
+
+      const grid = generateMazeGrid(COLS, ROWS);
+
+      // ramka
+      hitCtx.fillRect(MARGIN, MARGIN, MAZE_SIZE-2*MARGIN, WALL);
+      hitCtx.fillRect(MARGIN, MAZE_SIZE-MARGIN-WALL, MAZE_SIZE-2*MARGIN, WALL);
+      hitCtx.fillRect(MARGIN, MARGIN, WALL, MAZE_SIZE-2*MARGIN);
+      hitCtx.fillRect(MAZE_SIZE-MARGIN-WALL, MARGIN, WALL, MAZE_SIZE-2*MARGIN);
+
+      for(let y=0;y<ROWS;y++){
+        for(let x=0;x<COLS;x++){
+          const c = grid[y][x];
+          const {px,py} = cellToPx(x,y);
+
+          if(c.t) hitCtx.fillRect(px, py, CELL+2*WALL, WALL);
+          if(c.l) hitCtx.fillRect(px, py, WALL, CELL+2*WALL);
+          if(c.r) hitCtx.fillRect(px+CELL+WALL, py, WALL, CELL+2*WALL);
+          if(c.b) hitCtx.fillRect(px, py+CELL+WALL, CELL+2*WALL, WALL);
+        }
+      }
+
+      // narysuj ściany identycznie na main
+      ctx.drawImage(hitCanvas, 0, 0);
+
+      // START
       ctx.fillStyle = "#2f74ff";
       ctx.beginPath();
-      ctx.arc(startPoint.x, startPoint.y, 11, 0, Math.PI*2);
+      ctx.arc(startPoint.x, startPoint.y, 12, 0, Math.PI*2);
       ctx.fill();
-
       ctx.fillStyle = "rgba(255,255,255,.95)";
       ctx.font = "bold 10px Arial";
-      ctx.fillText("START", 38, 30);
+      ctx.fillText("START", startPoint.x + 14, startPoint.y + 4);
 
-      // cel
+      // CEL: zdjęcie 1
       ctx.save();
       ctx.beginPath();
       ctx.arc(goal.x, goal.y, goal.r, 0, Math.PI*2);
       ctx.clip();
-      if (goalImg.complete) {
+      if(goalImg.complete){
         ctx.drawImage(goalImg, goal.x-goal.r, goal.y-goal.r, goal.r*2, goal.r*2);
       } else {
         ctx.fillStyle = "#ffd1dc";
@@ -527,36 +626,29 @@
       ctx.arc(cursor.x, cursor.y, cursorR, 0, Math.PI*2);
       ctx.fill();
 
-      // podpowiedź na płótnie
-      if (!armed) {
+      // podpowiedź
+      if(!armed){
         ctx.fillStyle = "rgba(0,0,0,.55)";
         ctx.font = "14px Arial";
-        ctx.fillText("Kliknij niebieską kropkę START", 70, 24);
-      } else if (!started) {
-        ctx.fillStyle = "rgba(0,0,0,.55)";
-        ctx.font = "14px Arial";
-        ctx.fillText("Jedź do zdjęcia!", 120, 24);
+        ctx.fillText("Kliknij START, potem jedź do zdjęcia", 78, 26);
       }
     }
 
-    function resetMaze(msg){
-      armed = false;
-      started = false;
-      cursor.x = startPoint.x;
-      cursor.y = startPoint.y;
-      mazeHint.textContent = msg || "";
-      drawMaze();
+    function isWallAt(x,y){
+      const px = Math.max(0, Math.min(MAZE_SIZE-1, Math.floor(x)));
+      const py = Math.max(0, Math.min(MAZE_SIZE-1, Math.floor(y)));
+      const d = hitCtx.getImageData(px, py, 1, 1).data;
+      return d[3] > 0; // alpha > 0 => ściana
     }
 
     function hitWall(x,y){
-      for (const w of walls) {
-        const closestX = Math.max(w.x, Math.min(x, w.x+w.w));
-        const closestY = Math.max(w.y, Math.min(y, w.y+w.h));
-        const dx = x - closestX;
-        const dy = y - closestY;
-        if (dx*dx + dy*dy <= cursorR*cursorR) return true;
-      }
-      return false;
+      const pts = [
+        [x, y],
+        [x+cursorR, y], [x-cursorR, y], [x, y+cursorR], [x, y-cursorR],
+        [x+cursorR*0.7, y+cursorR*0.7], [x-cursorR*0.7, y+cursorR*0.7],
+        [x+cursorR*0.7, y-cursorR*0.7], [x-cursorR*0.7, y-cursorR*0.7],
+      ];
+      return pts.some(([px,py]) => isWallAt(px,py));
     }
 
     function reachedGoal(x,y){
@@ -565,29 +657,18 @@
       return (dx*dx + dy*dy) <= (goal.r*goal.r);
     }
 
-    function canvasPosFromEvent(ev){
-      const rect = mazeCanvas.getBoundingClientRect();
-      const scaleX = mazeCanvas.width / rect.width;
-      const scaleY = mazeCanvas.height / rect.height;
-      const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-      const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
-      return { x:(clientX-rect.left)*scaleX, y:(clientY-rect.top)*scaleY };
-    }
-
-    // kliknięcie na canvas: jeśli kliknięto w start -> uzbrój i startuj
+    // klik w START uzbraja
     mazeCanvas.addEventListener("click", (ev) => {
       const {x,y} = canvasPosFromEvent(ev);
       const dx = x - startPoint.x;
       const dy = y - startPoint.y;
-      const dist2 = dx*dx + dy*dy;
-
-      if (dist2 <= (14*14)) { // klik w kropkę start
+      if (dx*dx + dy*dy <= (16*16)) {
         armed = true;
         started = true;
         cursor.x = startPoint.x;
         cursor.y = startPoint.y;
         mazeHint.textContent = "Jedź do zdjęcia!";
-        drawMaze();
+        generateAndRenderMaze();
       }
     });
 
@@ -596,48 +677,42 @@
 
       const {x,y} = canvasPosFromEvent(ev);
 
-      // poza planszą
-      if (x<0 || y<0 || x>mazeCanvas.width || y>mazeCanvas.height) {
+      if (x<0 || y<0 || x>MAZE_SIZE || y>MAZE_SIZE) {
         resetMaze("Wróć na start 🙂");
         return;
       }
 
-      // dotknięcie ściany
       if (hitWall(x,y)) {
         armed = false;
         started = false;
         cursor.x = startPoint.x;
         cursor.y = startPoint.y;
-        mazeHint.textContent = "Au! Dotknąłeś ściany 😄 Kliknij START i spróbuj jeszcze";
-        drawMaze();
+        mazeHint.textContent = "Au! Ściana 😄 Kliknij START i spróbuj jeszcze";
+        generateAndRenderMaze();
         return;
       }
 
       cursor.x = x; cursor.y = y;
 
-      // sukces
       if (reachedGoal(x,y)) {
-        mazeHint.textContent = "Sukces! 💘";
         armed = false;
         started = false;
-        drawMaze();
+        mazeHint.textContent = "Sukces! 💘";
+        generateAndRenderMaze();
         setTimeout(() => showStep(3), 300);
         return;
       }
 
-      drawMaze();
+      generateAndRenderMaze();
     }
 
     mazeCanvas.addEventListener("mousemove", onMove);
     mazeCanvas.addEventListener("touchmove", (e) => { e.preventDefault(); onMove(e); }, {passive:false});
+    mazeResetBtn.addEventListener("click", () => resetMaze("Kliknij START 🙂"));
+    goalImg.onload = () => generateAndRenderMaze();
 
-    mazeResetBtn.addEventListener("click", () => resetMaze("Kliknij niebieską kropkę START 🙂"));
-
-    goalImg.onload = drawMaze;
-    drawMaze();
-
-    // start: tylko 1 widok
-    showStep(1);
+    // start labiryntu (na wejściu do kroku 2)
+    resetMaze("Kliknij START 🙂");
   </script>
 
   <script async src="https://tenor.com/embed.js"></script>
