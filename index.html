@@ -17,7 +17,6 @@
       overflow:hidden;
     }
 
-    /* ====== KLASYCZNY LOOK (własny) ====== */
     .hidden{ display:none; }
 
     /* wrapper: tytuł + captcha (bez odstępu) */
@@ -25,23 +24,23 @@
       display:flex;
       flex-direction:column;
       align-items:center;
-      gap: 0px; /* <- ZERO odstępu między napisem a captcha */
+      gap: 0px;
       z-index: 2;
     }
-
     .top-title{
       width:min(560px, 92vw);
       text-align:center;
       font-weight:900;
       font-size:clamp(22px, 4.5vw, 34px);
       letter-spacing:.3px;
-      margin: 0;              /* <- ZERO marginesu */
-      padding: 0;             /* <- ZERO paddingu */
-      line-height: 1.05;      /* trochę ciaśniej */
+      margin: 0;
+      padding: 0;
+      line-height: 1.05;
       color:#111;
       text-shadow: 0 10px 30px rgba(0,0,0,.12);
     }
 
+    /* ====== CAPTCHA ====== */
     .captcha{
       width: min(360px, 94vw);
       background:#fff;
@@ -52,34 +51,29 @@
       font-family: Arial, system-ui, sans-serif;
       position:relative;
       z-index: 2;
-      margin-top: 0; /* <- pewność, że nie robi się odstęp */
+      margin-top: 0;
     }
-
     .captcha-header{
       background:#2f74ff;
       color:#fff;
       padding:12px 12px;
       text-align:left;
     }
-
     .captcha-title{
       font-size:12px;
       opacity:.95;
       letter-spacing:.2px;
     }
-
     .captcha-subtitle{
       font-size:18px;
       font-weight:700;
       margin-top:2px;
       line-height:1.1;
     }
-
     .captcha-body{
       padding:10px;
       background:#f6f6f6;
     }
-
     .captcha-grid{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -88,7 +82,6 @@
       padding:2px;
       border-radius:6px;
     }
-
     .cap-tile{
       position:relative;
       background:#fff;
@@ -98,7 +91,6 @@
       border-radius:4px;
       user-select:none;
     }
-
     .cap-tile img{
       width:100%;
       height:100%;
@@ -107,7 +99,6 @@
       user-select:none;
       pointer-events:none;
     }
-
     .cap-tile.selected::after{
       content:"";
       position:absolute;
@@ -115,7 +106,6 @@
       border:4px solid #2f74ff;
       box-shadow: inset 0 0 0 2px rgba(255,255,255,.7);
     }
-
     .cap-tile.selected::before{
       content:"✓";
       position:absolute;
@@ -133,7 +123,6 @@
       box-shadow: 0 6px 14px rgba(0,0,0,.18);
       z-index: 2;
     }
-
     .captcha-footer{
       display:flex;
       align-items:center;
@@ -143,18 +132,15 @@
       border-top:1px solid #e6e6e6;
       background:#fff;
     }
-
     .captcha-status{
       font-size:12px;
       color:#555;
       min-height:16px;
     }
-
     .captcha-actions{
       display:flex;
       gap:8px;
     }
-
     .cap-btn{
       border:1px solid #d7d7d7;
       background:#fff;
@@ -164,18 +150,16 @@
       font-weight:700;
       font-size:13px;
     }
-
     .cap-btn.primary{
       background:#2f74ff;
       color:#fff;
       border-color:#2f74ff;
     }
-
     .cap-btn.ghost{
       width:38px;
     }
 
-    /* ====== TWOJA KARTA ====== */
+    /* ====== KARTA ====== */
     .card{
       width:min(560px, 92vw);
       background: rgba(255,255,255,.75);
@@ -218,7 +202,7 @@
       to{ transform: translateY(-140vh) rotate(360deg); opacity:0;}
     }
 
-    /* ====== EKRAN ATAKU MIŁOŚCI ====== */
+    /* ====== ATAK MIŁOŚCI ====== */
     .attack{
       width:min(560px, 92vw);
       background: rgba(255,255,255,.9);
@@ -242,7 +226,7 @@
 
 <body>
 
-  <!-- ====== WERYFIKACJA: tytuł + captcha w jednym wrapperze ====== -->
+  <!-- 1 widok: napis + captcha -->
   <div class="gateWrap" id="gateWrap">
     <div class="top-title">Potwierdź, że jesteś moim mężem</div>
 
@@ -267,7 +251,7 @@
     </div>
   </div>
 
-  <!-- ====== TWOJA KARTA (ukryta do czasu przejścia weryfikacji) ====== -->
+  <!-- 2 widok: pytanie -->
   <div class="card hidden" id="card">
     <h1>Misiu Pysiu<span id="name">, Mój Królisiu</span> 💘</h1>
     <p style="font-size:20px; font-weight:700;">Zostaniesz moją Walentynką? (wybierz dobrze)</p>
@@ -278,7 +262,7 @@
     </div>
   </div>
 
-  <!-- ====== ATAK MIŁOŚCI (ukryty do czasu kliknięcia TAK) ====== -->
+  <!-- 3 widok: atak miłości -->
   <div class="attack hidden" id="loveAttack">
     <div class="attack-title">ATAK MIŁOŚCI!!!</div>
 
@@ -293,8 +277,27 @@
   </div>
 
   <script>
+    // ====== nawigacja ekranów: zawsze widoczny tylko jeden ======
+    function showStep(step){
+      const gateWrap = document.getElementById("gateWrap");
+      const card = document.getElementById("card");
+      const loveAttack = document.getElementById("loveAttack");
+
+      gateWrap.classList.add("hidden");
+      card.classList.add("hidden");
+      loveAttack.classList.add("hidden");
+
+      if (step === 1) gateWrap.classList.remove("hidden");
+      if (step === 2) card.classList.remove("hidden");
+      if (step === 3) loveAttack.classList.remove("hidden");
+    }
+
+    function resetCaptchaUI(){
+      document.querySelectorAll(".cap-tile.selected").forEach(t => t.classList.remove("selected"));
+      document.getElementById("hint").textContent = "";
+    }
+
     // ====== USTAWIENIA WERYFIKACJI ======
-    // USTAW correct:true tylko dla tych obrazów, które mają być "walentynką"
     const images = [
       { src: "img/1.png", correct: true },
       { src: "img/2.png", correct: true },
@@ -340,8 +343,7 @@
     }
 
     document.getElementById("resetBtn").addEventListener("click", () => {
-      document.querySelectorAll(".cap-tile.selected").forEach(t => t.classList.remove("selected"));
-      hint.textContent = "";
+      resetCaptchaUI();
     });
 
     document.getElementById("checkBtn").addEventListener("click", () => {
@@ -351,9 +353,8 @@
       const ok = sel.length === cor.length && sel.every((v,i)=>v===cor[i]);
 
       if (ok) {
-        hint.textContent = "Super! 💘";
-        document.getElementById("gateWrap").classList.add("hidden"); // <- ukrywa i tytuł i captcha
-        document.getElementById("card").classList.remove("hidden");
+        resetCaptchaUI();
+        showStep(2); // przejście do pytania
       } else {
         hint.textContent = "CO?!!! Wybieraj jeszcze raz!";
       }
@@ -379,8 +380,7 @@
 
     // ====== KLIK "TAK" => ATAK MIŁOŚCI ======
     document.getElementById("yesBtn").onclick = () => {
-      document.getElementById("card").classList.add("hidden");
-      document.getElementById("loveAttack").classList.remove("hidden");
+      showStep(3);
       confetti();
     };
 
@@ -419,11 +419,12 @@
         setTimeout(()=>{clearInterval(t); p.remove();}, 1200+Math.random()*600);
       }
     }
+
+    // start zawsze od 1 widoku
+    showStep(1);
   </script>
 
-  <!-- Tenor embed: tylko raz, na końcu -->
   <script async src="https://tenor.com/embed.js"></script>
-
 </body>
 </html>
 
